@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Heart, Activity, Shield, ArrowRight, Phone, MapPin, Clock, ChevronRight, CheckCircle2, Star, Quote, MessageCircle, Instagram, Facebook, Mail } from 'lucide-react';
+import { Heart, Activity, Shield, ArrowRight, Phone, MapPin, Clock, ChevronRight, CheckCircle2, Star, Quote, MessageCircle, Instagram, Facebook, Mail, Menu, X } from 'lucide-react';
 import './index.css';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -17,21 +18,52 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close menu when route changes
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location]);
+
   return (
-    <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+    <nav className={`navbar ${scrolled ? 'scrolled' : ''} ${isOpen ? 'menu-open' : ''}`}>
       <div className="container nav-content">
         <Link to="/" className="logo">
-          <img 
-            src="/logo.png" 
-            alt="Santo Cuore" 
+          <img
+            src="/logo.png"
+            alt="Santo Cuore"
             className="brand-logo"
           />
         </Link>
-        <div className="nav-links">
+
+        {/* Desktop Links */}
+        <div className="nav-links desktop-only">
           <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Inicio</Link>
           <Link to="/especialidades" className={`nav-link ${location.pathname === '/especialidades' ? 'active' : ''}`}>Especialidades</Link>
           <Link to="/staff" className={`nav-link ${location.pathname === '/staff' ? 'active' : ''}`}>Staff</Link>
           <Link to="/contacto" className={`nav-link ${location.pathname === '/contacto' ? 'active' : ''}`}>Contacto</Link>
+        </div>
+
+        {/* Mobile Toggle */}
+        <button className="mobile-menu-toggle" onClick={() => setIsOpen(!isOpen)}>
+          {isOpen ? <X size={28} /> : <Menu size={28} />}
+        </button>
+
+        {/* Mobile Menu Overlay */}
+        <div className={`mobile-menu ${isOpen ? 'open' : ''}`}>
+          <Link to="/" className={`mobile-nav-link ${location.pathname === '/' ? 'active' : ''}`}>Inicio</Link>
+          <Link to="/especialidades" className={`mobile-nav-link ${location.pathname === '/especialidades' ? 'active' : ''}`}>Especialidades</Link>
+          <Link to="/staff" className={`mobile-nav-link ${location.pathname === '/staff' ? 'active' : ''}`}>Staff</Link>
+          <Link to="/contacto" className={`mobile-nav-link ${location.pathname === '/contacto' ? 'active' : ''}`}>Contacto</Link>
+
+          <div className="mobile-menu-footer">
+            <div className="mobile-contact-item">
+              <Phone size={18} />
+              <span>+54 (351) 4241928</span>
+            </div>
+            <div className="mobile-contact-item">
+              <MapPin size={18} />
+              <span>9 de Julio 660, Córdoba</span>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
@@ -44,9 +76,9 @@ const Footer = () => (
       <div className="footer-grid">
         <div className="footer-col">
           <Link to="/" className="logo" style={{ marginBottom: '24px' }}>
-            <img 
-              src="/logo.png" 
-              alt="Santo Cuore" 
+            <img
+              src="/logo.png"
+              alt="Santo Cuore"
               className="brand-logo"
             />
           </Link>
@@ -57,11 +89,11 @@ const Footer = () => (
         <div className="footer-col">
           <h4>Contacto</h4>
           <ul className="footer-links">
-            <li><a href="https://maps.app.goo.gl/iHKJthuxi41C8Yb59" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}><MapPin size={16} style={{ marginTop: '4px', flexShrink: 0 }}/> <span>9 de Julio 660 – 1º Piso Of. 13<br/>Córdoba, Argentina</span></a></li>
-            <li><a href="tel:+543514241928" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Phone size={16} style={{ flexShrink: 0 }}/> Tel: +54 (351) 4241928</a></li>
-            <li><a href="https://api.whatsapp.com/send?phone=543518079549" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MessageCircle size={16} style={{ flexShrink: 0 }}/> Cel: +54 351 807 9549</a></li>
-            <li><a href="mailto:info@santocuore.com.ar" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Mail size={16} style={{ flexShrink: 0 }}/> info@santocuore.com.ar</a></li>
-            <li><span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}><Clock size={16} style={{ flexShrink: 0 }}/> Lu. a Vi. – 9 a 20 Hs.</span></li>
+            <li><a href="https://maps.app.goo.gl/iHKJthuxi41C8Yb59" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}><MapPin size={16} style={{ marginTop: '4px', flexShrink: 0 }} /> <span>9 de Julio 660 – 1º Piso Of. 13<br />Córdoba, Argentina</span></a></li>
+            <li><a href="tel:+543514241928" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Phone size={16} style={{ flexShrink: 0 }} /> Tel: +54 (351) 4241928</a></li>
+            <li><a href="https://api.whatsapp.com/send?phone=543518079549" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MessageCircle size={16} style={{ flexShrink: 0 }} /> Cel: +54 351 807 9549</a></li>
+            <li><a href="mailto:info@santocuore.com.ar" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Mail size={16} style={{ flexShrink: 0 }} /> info@santocuore.com.ar</a></li>
+            <li><span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}><Clock size={16} style={{ flexShrink: 0 }} /> Lu. a Vi. – 9 a 20 Hs.</span></li>
           </ul>
         </div>
         <div className="footer-col">
@@ -84,7 +116,7 @@ const Footer = () => (
 const Home = () => {
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 1000], [0, 200]);
-  
+
   const [width, setWidth] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -140,31 +172,34 @@ const Home = () => {
   return (
     <>
       <section className="hero">
-        <motion.div 
-          className="glass-panel"
+        <motion.img
+          src="/logo-hover.png"
+          alt=""
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.5 }}
           style={{
-            position: 'absolute', width: '150px', height: '150px', borderRadius: '30px',
-            top: '20%', right: '15%', rotate: 15, zIndex: 5
+            position: 'absolute',
+            top: '110px',
+            left: 0,
+            width: '100%',
+            height: '60%',
+            backgroundColor: 'transparent',
+            objectFit: 'cover',
+            zIndex: 1,
+            pointerEvents: 'none',
+            filter: 'none'
           }}
-          animate={{ y: [0, -20, 0], rotate: [15, 20, 15] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div 
-          className="glass-panel"
-          style={{
-            position: 'absolute', width: '80px', height: '80px', borderRadius: '50%',
-            bottom: '30%', left: '10%', zIndex: 5, background: 'rgba(0, 131, 137, 0.2)'
-          }}
-          animate={{ y: [0, 30, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
 
-        <div className="container">
-          <motion.div 
+
+        <div className="container" style={{ display: 'flex' }}>
+          <motion.div
             className="hero-content"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
+            style={{ marginRight: 'auto', paddingRight: '100px' }}
           >
             <span className="hero-subtitle">Centro de Salud y Medicina Estética</span>
             <h1 className="hero-title">
@@ -188,7 +223,7 @@ const Home = () => {
 
       <section className="container">
         <div className="features-grid">
-          <motion.div 
+          <motion.div
             className="glass-card feature-card"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -204,7 +239,7 @@ const Home = () => {
             </p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="glass-card feature-card"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -220,7 +255,7 @@ const Home = () => {
             </p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="glass-card feature-card"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -240,7 +275,7 @@ const Home = () => {
 
       <section id="nosotros" className="about-section container">
         <div className="about-grid">
-          <motion.div 
+          <motion.div
             className="about-video-wrapper"
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -249,20 +284,20 @@ const Home = () => {
           >
             <div className="glass-panel" style={{ padding: '16px', borderRadius: '24px', overflow: 'hidden', position: 'relative' }}>
               <div className="ambient-glow glow-teal" style={{ width: '200px', height: '200px', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', opacity: 0.3 }} />
-              <iframe 
-                width="100%" 
-                height="450" 
-                src="https://www.youtube.com/embed/PnoRARyOxMY" 
-                title="Sede Santo Cuore" 
-                frameBorder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              <iframe
+                width="100%"
+                height="450"
+                src="https://www.youtube.com/embed/PnoRARyOxMY"
+                title="Sede Santo Cuore"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 style={{ borderRadius: '16px', display: 'block', position: 'relative', zIndex: 2 }}
               ></iframe>
             </div>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             className="about-content"
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -274,7 +309,7 @@ const Home = () => {
               <span className="text-gradient">Nuestra</span>
               <span className="text-gradient-teal"> Esencia</span>
             </h2>
-            
+
             <div className="glass-card" style={{ marginBottom: '24px', padding: '32px', borderLeft: '4px solid var(--brand-red)' }}>
               <h3 style={{ color: 'white', marginBottom: '12px', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Activity size={24} color="var(--brand-red)" /> Misión
@@ -298,7 +333,7 @@ const Home = () => {
 
       {/* Obras Sociales Section */}
       <section className="container" style={{ padding: '80px 0' }}>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -313,9 +348,9 @@ const Home = () => {
           <div style={{ width: '80px', height: '3px', background: 'var(--brand-teal)', margin: '20px auto', borderRadius: '2px' }} />
         </motion.div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
           gap: '30px',
           alignItems: 'center',
           justifyItems: 'center'
@@ -349,19 +384,19 @@ const Home = () => {
                 overflow: 'hidden'
               }}
             >
-              <img 
-                src={obra.url} 
-                alt={obra.name} 
+              <img
+                src={obra.url}
+                alt={obra.name}
                 style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'block';
                 }}
               />
-              <span style={{ 
+              <span style={{
                 display: 'none',
-                color: obra.fallbackColor, 
-                fontSize: obra.name === 'UN' ? '3rem' : '1.3rem', 
+                color: obra.fallbackColor,
+                fontSize: obra.name === 'UN' ? '3rem' : '1.3rem',
                 fontWeight: 800,
                 letterSpacing: obra.name === 'OSDE' ? '-1px' : '1px',
                 textTransform: obra.name === 'OSDE' ? 'lowercase' : 'uppercase',
@@ -376,7 +411,7 @@ const Home = () => {
 
       {/* Reseñas Section */}
       <section className="container" style={{ padding: '80px 0 120px 0' }}>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -392,9 +427,9 @@ const Home = () => {
         </motion.div>
 
         <motion.div ref={carouselRef} style={{ overflow: 'hidden', cursor: 'grab', padding: '20px 0' }} whileTap={{ cursor: 'grabbing' }}>
-          <motion.div 
-            drag="x" 
-            dragConstraints={{ right: 0, left: -width }} 
+          <motion.div
+            drag="x"
+            dragConstraints={{ right: 0, left: -width }}
             style={{ display: 'flex', gap: '32px', width: 'max-content', padding: '0 20px' }}
           >
             {reviews.map((review, idx) => (
@@ -444,8 +479,8 @@ const Especialidades = () => {
       title: "Departamento Cardiovascular",
       icon: <Heart size={32} color="var(--brand-red)" />,
       items: [
-        "Cardiología", "Angiología", "Flebología", "Clínica de heridas", "Kinesiología flebo-linfática", 
-        "Ecocardiograma doppler color", "Ecografía doppler periférica", "Electrocardiograma", 
+        "Cardiología", "Angiología", "Flebología", "Clínica de heridas", "Kinesiología flebo-linfática",
+        "Ecocardiograma doppler color", "Ecografía doppler periférica", "Electrocardiograma",
         "Mapa 24 hs", "Holter 24 hs", "Tratamiento de varices con láser Nd-YAG 1064 nm"
       ]
     },
@@ -453,7 +488,7 @@ const Especialidades = () => {
       title: "Departamento Metabólico",
       icon: <Activity size={32} color="var(--brand-teal)" />,
       items: [
-        "Medicina nutricional", "Obesiología", "Diabetología", "Nutrición", "Endocrinología", 
+        "Medicina nutricional", "Obesiología", "Diabetología", "Nutrición", "Endocrinología",
         "Medición de composición corporal", "Kinesiología corporal"
       ]
     },
@@ -461,10 +496,10 @@ const Especialidades = () => {
       title: "Médico Estético",
       icon: <Shield size={32} color="var(--brand-red)" />,
       items: [
-        "Medicina estética", "Cirugía plástica", "Kinesiología estetica y dermatofuncional", 
-        "Recuperación, prevención y mantenimiento capilar", "Eliminación de lesiones de piel", 
-        "Depilación láser Soprano Ice", "Luz pulsada Harmony", "Vela Velvet", "Criolipolisis", 
-        "Body Up", "Plasma rico en plaquetas", "Peeling", "Limpieza facial", "Radiofrecuencia", 
+        "Medicina estética", "Cirugía plástica", "Kinesiología estetica y dermatofuncional",
+        "Recuperación, prevención y mantenimiento capilar", "Eliminación de lesiones de piel",
+        "Depilación láser Soprano Ice", "Luz pulsada Harmony", "Vela Velvet", "Criolipolisis",
+        "Body Up", "Plasma rico en plaquetas", "Peeling", "Limpieza facial", "Radiofrecuencia",
         "Combos corporales celulitis, estrías, adiposidad localizada, flacidez"
       ]
     },
@@ -472,7 +507,7 @@ const Especialidades = () => {
       title: "Especialidades Varias",
       icon: <Activity size={32} color="var(--brand-teal)" />,
       items: [
-        "Ginecología", "Sexologia", "Medicina reproductiva", "Kinesiología de piso pélvico", 
+        "Ginecología", "Sexologia", "Medicina reproductiva", "Kinesiología de piso pélvico",
         "Psicología", "Dermatología", "Clínica médica", "Entrenamiento funcional personalizado"
       ]
     }
@@ -481,7 +516,7 @@ const Especialidades = () => {
   return (
     <div style={{ paddingTop: '140px', paddingBottom: '80px' }}>
       <div className="container">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -498,7 +533,7 @@ const Especialidades = () => {
           </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="glass-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -514,8 +549,8 @@ const Especialidades = () => {
               "Buenas experiencias.",
               "Evitamos la sobre prestación médica."
             ].map((value, idx) => (
-              <motion.div 
-                key={idx} 
+              <motion.div
+                key={idx}
                 whileHover={{ x: 5 }}
                 style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}
               >
@@ -528,7 +563,7 @@ const Especialidades = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
           {departments.map((dept, idx) => (
-            <motion.div 
+            <motion.div
               key={idx}
               className="glass-card feature-card"
               initial={{ opacity: 0, y: 40 }}
@@ -550,10 +585,10 @@ const Especialidades = () => {
                   </li>
                 ))}
               </ul>
-              <motion.button 
+              <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="btn-glass" 
+                className="btn-glass"
                 style={{ marginTop: '32px', width: '100%', display: 'flex', justifyContent: 'center' }}
               >
                 Ver más detalles
@@ -572,28 +607,28 @@ const Staff = () => {
   }, []);
 
   const staffMembers = [
-    { name: "Dr. Alejandro Vivero", role: "Médico especialista en Cardiología, esp. Medicina Vascular." },
-    { name: "Dra Loiacono Mariana", role: "Médica especialista en clínica médica, esp. en Med Estetica." },
-    { name: "Lic. Verde Maria José", role: "Lic. en kinesiología y fisioterapia. Esp en rehabilitación vascular." },
-    { name: "Matías Ramírez", role: "Licenciado en Educación Física." },
-    { name: "Lic. Tobares Andrea", role: "Lic. en kinesiología y fisioterapia. Esp. en rehabilitación vascular." },
-    { name: "Gasparrini Tamara Julieta", role: "Licenciada en nutrición." },
-    { name: "Dra Carboni Mariela", role: "Médica especialista en cirugía, esp. Flebologia." },
-    { name: "Dr Loson Ricardo", role: "Médico especialista en cirugía vascular. Esp. Flebologia." },
-    { name: "Daniela Gualtieri", role: "Licenciada en kinesiología y fisioterapia" },
-    { name: "Dra. Eugenia Bazan Quiroga", role: "Médica ginecóloga, esp. en sexología." },
-    { name: "Cecilia Taburet", role: "Licenciada en psicología." },
-    { name: "Dra Actis Danna Zaieg Rocio", role: "Médica espe. en clínica médica y en Psicoinmunoneuroendocrinología." },
-    { name: "Dra. Vanella Sofia", role: "Médica especialista en dermatología." },
-    { name: "Dra. Romina Medina", role: "Médica especialista en Endocrinología." },
-    { name: "Lic. Gutierres Guillermo", role: "Licenciado en educación física." },
-    { name: "Dra. Natalia Batello", role: "Médica ginecóloga, esp. en medicina reproductiva." }
+    { name: "Dr. Alejandro Vivero", role: "Médico especialista en Cardiología, esp. Medicina Vascular.", image: "/especialistas/1.jpg" },
+    { name: "Dra Loiacono Mariana", role: "Médica especialista en clínica médica, esp. en Med Estetica.", image: "/especialistas/2.webp" },
+    { name: "Lic. Verde Maria José", role: "Lic. en kinesiología y fisioterapia. Esp en rehabilitación vascular.", image: "/especialistas/3.webp" },
+    { name: "Matías Ramírez", role: "Licenciado en Educación Física.", image: "/especialistas/4.png" },
+    { name: "Lic. Tobares Andrea", role: "Lic. en kinesiología y fisioterapia. Esp. en rehabilitación vascular.", image: "/especialistas/5.webp" },
+    { name: "Gasparrini Tamara Julieta", role: "Licenciada en nutrición.", image: "/especialistas/6.webp" },
+    { name: "Dra Carboni Mariela", role: "Médica especialista en cirugía, esp. Flebologia.", image: "/especialistas/7.jpg" },
+    { name: "Dr Loson Ricardo", role: "Médico especialista en cirugía vascular. Esp. Flebologia.", image: "/especialistas/8.webp" },
+    { name: "Daniela Gualtieri", role: "Licenciada en kinesiología y fisioterapia", image: "/especialistas/9.jpeg" },
+    { name: "Dra. Eugenia Bazan Quiroga", role: "Médica ginecóloga, esp. en sexología.", image: "/especialistas/10.jpeg" },
+    { name: "Cecilia Taburet", role: "Licenciada en psicología.", image: "/especialistas/11.jpeg" },
+    { name: "Dra Actis Danna Zaieg Rocio", role: "Médica espe. en clínica médica y en Psicoinmunoneuroendocrinología.", image: "/especialistas/12.jpg" },
+    { name: "Dra. Vanella Sofia", role: "Médica especialista en dermatología.", image: "/especialistas/13.jpeg" },
+    { name: "Dra. Romina Medina", role: "Médica especialista en Endocrinología.", image: "/especialistas/14.jpeg" },
+    { name: "Lic. Gutierres Guillermo", role: "Licenciado en educación física.", image: "/especialistas/15.webp" },
+    { name: "Dra. Natalia Batello", role: "Médica ginecóloga, esp. en medicina reproductiva.", image: "/especialistas/16.jpeg" }
   ];
 
   return (
     <div style={{ paddingTop: '140px', paddingBottom: '80px' }}>
       <div className="container">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -612,7 +647,7 @@ const Staff = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px' }}>
           {staffMembers.map((member, idx) => (
-            <motion.div 
+            <motion.div
               key={idx}
               className="glass-card"
               initial={{ opacity: 0, y: 40 }}
@@ -623,11 +658,10 @@ const Staff = () => {
               style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', padding: 0 }}
             >
               <div style={{ width: '100%', height: '320px', background: 'rgba(255,255,255,0.05)', position: 'relative' }}>
-                <img 
-                  src={`https://picsum.photos/seed/doctor${idx + 1}/400/500`} 
+                <img
+                  src={member.image}
                   alt={member.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(20%) contrast(110%)' }}
-                  referrerPolicy="no-referrer"
                 />
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to top, rgba(10,5,2,1) 0%, rgba(10,5,2,0.8) 40%, transparent 100%)' }} />
               </div>
@@ -653,7 +687,7 @@ const Contacto = () => {
   return (
     <div style={{ paddingTop: '140px', paddingBottom: '80px' }}>
       <div className="container">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -672,7 +706,7 @@ const Contacto = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px', marginBottom: '80px' }}>
           {/* WhatsApp Card */}
-          <motion.a 
+          <motion.a
             href="https://api.whatsapp.com/send?phone=543518079549"
             target="_blank"
             rel="noopener noreferrer"
@@ -695,7 +729,7 @@ const Contacto = () => {
           </motion.a>
 
           {/* Redes Sociales */}
-          <motion.div 
+          <motion.div
             className="glass-card"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -720,7 +754,7 @@ const Contacto = () => {
           </motion.div>
 
           {/* Info Adicional */}
-          <motion.div 
+          <motion.div
             className="glass-card"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -768,12 +802,12 @@ const Contacto = () => {
             <h3 style={{ color: 'white', fontSize: '1.8rem', margin: 0 }}>Encontranos en Google Maps</h3>
           </div>
           <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <iframe 
-              width="100%" 
-              height="500" 
-              style={{ border: 0, display: 'block' }} 
-              loading="lazy" 
-              allowFullScreen 
+            <iframe
+              width="100%"
+              height="500"
+              style={{ border: 0, display: 'block' }}
+              loading="lazy"
+              allowFullScreen
               src="https://maps.google.com/maps?q=Santo%20Cuore,%209%20de%20Julio%20660,%20C%C3%B3rdoba&t=&z=16&ie=UTF8&iwloc=&output=embed"
               title="Ubicación Santo Cuore"
             ></iframe>
@@ -790,7 +824,7 @@ function App() {
       {/* Ambient Background Glows */}
       <div className="ambient-glow glow-red" />
       <div className="ambient-glow glow-teal" />
-      
+
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
