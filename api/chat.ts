@@ -44,7 +44,11 @@ export async function POST(req: Request) {
                         paciente: z.string().optional().describe('Nombre del paciente'),
                         especialidad: z.string().optional().describe('Especialidad (ej: cardiología, pediatría)'),
                         fechaHora: z.string().optional().describe('Fecha mencionada')
-                    })
+                    }),
+                    execute: async (args) => {
+                        console.log('Ejecutando actualizarResumenTurno en server:', args);
+                        return { updated: args };
+                    }
                 }),
             },
         });
