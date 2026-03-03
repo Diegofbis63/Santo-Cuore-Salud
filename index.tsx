@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Heart, Activity, Shield, ArrowRight, Phone, MapPin, Clock, ChevronRight, CheckCircle2, Star, Quote, MessageCircle, Instagram, Facebook, Mail, Menu, X } from 'lucide-react';
 import './index.css';
+import ReservarPage from './app/reservar/page';
+import AdminDashboard from './app/admin/page';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -39,6 +41,7 @@ const Navbar = () => {
           <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Inicio</Link>
           <Link to="/especialidades" className={`nav-link ${location.pathname === '/especialidades' ? 'active' : ''}`}>Especialidades</Link>
           <Link to="/staff" className={`nav-link ${location.pathname === '/staff' ? 'active' : ''}`}>Staff</Link>
+          <Link to="/reservar" className={`nav-link ${location.pathname === '/reservar' ? 'active' : ''}`}>Turnos</Link>
           <Link to="/contacto" className={`nav-link ${location.pathname === '/contacto' ? 'active' : ''}`}>Contacto</Link>
         </div>
 
@@ -52,6 +55,7 @@ const Navbar = () => {
           <Link to="/" className={`mobile-nav-link ${location.pathname === '/' ? 'active' : ''}`}>Inicio</Link>
           <Link to="/especialidades" className={`mobile-nav-link ${location.pathname === '/especialidades' ? 'active' : ''}`}>Especialidades</Link>
           <Link to="/staff" className={`mobile-nav-link ${location.pathname === '/staff' ? 'active' : ''}`}>Staff</Link>
+          <Link to="/reservar" className={`mobile-nav-link ${location.pathname === '/reservar' ? 'active' : ''}`}>Turnos</Link>
           <Link to="/contacto" className={`mobile-nav-link ${location.pathname === '/contacto' ? 'active' : ''}`}>Contacto</Link>
 
           <div className="mobile-menu-footer">
@@ -171,49 +175,62 @@ const Home = () => {
 
   return (
     <>
-      <section className="hero">
-        <motion.img
-          src="/logo-hover.png"
-          alt=""
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.5 }}
-          style={{
-            position: 'absolute',
-            top: '110px',
-            left: 0,
-            width: '100%',
-            height: '60%',
-            backgroundColor: 'transparent',
-            objectFit: 'cover',
-            zIndex: 1,
-            pointerEvents: 'none',
-            filter: 'none'
-          }}
-        />
+      <section className="hero-v2" style={{ position: 'relative', width: '100%' }}>
+        {/* Banner Image Container */}
+        <div style={{
+          width: '100%',
+          height: '60vh',
+          position: 'relative',
+          marginTop: '110px',
+          overflow: 'hidden'
+        }}>
+          <motion.img
+            src="/logo-hover.png"
+            alt=""
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.5 }}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              filter: 'none'
+            }}
+          />
+        </div>
 
-
-        <div className="container" style={{ display: 'flex' }}>
+        {/* Hero Content below image */}
+        <div className="container" style={{ paddingTop: '80px', paddingBottom: '120px' }}>
           <motion.div
             className="hero-content"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            style={{ marginRight: 'auto', paddingRight: '100px' }}
+            style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}
           >
-            <span className="hero-subtitle">Centro de Salud y Medicina Estética</span>
-            <h1 className="hero-title">
-              <span className="text-gradient">Innovación en</span>
+            <motion.span
+              className="hero-subtitle"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              Centro de Salud y Medicina Estética
+            </motion.span>
+
+            <h1 className="hero-title" style={{ marginTop: '20px' }}>
+              <span className="text-gradient" style={{ display: 'block', marginBottom: '10px' }}>Innovación en</span>
               <span className="text-gradient-brand">Salud Integral</span>
             </h1>
-            <p className="hero-desc">
+
+            <p className="hero-desc" style={{ fontSize: '1.25rem', lineHeight: '1.8', color: 'var(--text-secondary)', marginBottom: '40px', maxWidth: '700px', margin: '0 auto 40px' }}>
               Desde 2013 brindamos servicios de medicina ambulatoria con profesionales especializados, tecnología de vanguardia y un enfoque profundamente humano.
             </p>
-            <div className="hero-actions">
-              <button className="btn-primary">
-                Solicitar Turno <ArrowRight size={18} />
-              </button>
-              <Link to="/especialidades" className="btn-glass" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+
+            <div className="hero-actions" style={{ justifyContent: 'center' }}>
+              <Link to="/reservar" className="btn-primary" style={{ padding: '18px 40px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                Solicitar Turno <ArrowRight size={20} />
+              </Link>
+              <Link to="/especialidades" className="btn-glass" style={{ padding: '18px 40px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                 Conocer Especialidades
               </Link>
             </div>
@@ -831,6 +848,8 @@ function App() {
         <Route path="/especialidades" element={<Especialidades />} />
         <Route path="/staff" element={<Staff />} />
         <Route path="/contacto" element={<Contacto />} />
+        <Route path="/reservar" element={<ReservarPage />} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
       <Footer />
     </BrowserRouter>
