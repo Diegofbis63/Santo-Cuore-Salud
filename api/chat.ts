@@ -4,7 +4,9 @@ import { z } from 'zod';
 
 // We run as a Node.js serverless function to ensure streams and `fetch` work 100% reliably.
 
-export const runtime = 'edge';
+export const config = {
+    runtime: 'edge',
+};
 
 export async function POST(req: Request) {
     try {
