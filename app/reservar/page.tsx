@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Calendar, Activity, Shield, Clock, AlertCircle, RefreshCcw } from 'lucide-react';
-import { useChat } from '@ai-sdk/react';
+import { useChat } from 'ai/react';
 
 const ReservarPage = () => {
     const { messages, input, handleInputChange, handleSubmit, isLoading, error, reload, setMessages } = useChat({
