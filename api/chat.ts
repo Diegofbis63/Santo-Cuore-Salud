@@ -36,8 +36,29 @@ export async function POST(req: Request) {
       1. Usa un tono sumamente elegante y profesional (usa 'vos' de forma respetuosa).
       2. No des diagnósticos, solo recomienda al especialista adecuado.
       3. Importante: no pidas demasiados datos de una. Trata de mantener un flujo natural en la conversación.
-      4. Si el paciente da su nombre o especialidad deseada, la IA registrará esto mediante herramientas internas automáticamente.`,
+      4. Si el paciente da su nombre o especialidad deseada, SIEMPRE utiliza la herramienta consultarDisponibilidad para buscar en la base de datos y ofrecerle los turnos.
+      5. La IA registrará los datos detectados paralelamente mediante actualizarResumenTurno.`,
             tools: {
+                consultarDisponibilidad: tool({
+                    description: 'Consulta en la base de datos de la clínica los horarios y turnos disponibles para una especialidad.',
+                    parameters: z.object({
+                        especialidad: z.string().describe('La especialidad buscada (ej: dermatología, cardiología)'),
+                    }),
+                    execute: async ({ especialidad }) => {
+                        console.log('Consultando DB para:', especialidad);
+                        // Mock DB call:
+                        const horariosDisponibles = [
+                            'Mañana a las 10:00 AM',
+                            'Mañana a las 04:30 PM',
+                            'Pasado mañana a las 11:15 AM'
+                        ];
+                        return {
+                            especialidad,
+                            horarios: horariosDisponibles,
+                            mensaje: `Base de datos consultada. Menciona textualmente al usuario estos horarios disponibles para ${especialidad} y pregúntale cuál prefiere.`
+                        };
+                    }
+                }),
                 actualizarResumenTurno: tool({
                     description: 'Actualiza automáticamente la pantalla con los datos que dio el paciente (nombre, especialidad o fecha), si alguno falta envíalo vacío.',
                     parameters: z.object({
@@ -51,6 +72,7 @@ export async function POST(req: Request) {
                     }
                 }),
             },
+            maxSteps: 5,
         });
 
         return result.toDataStreamResponse();

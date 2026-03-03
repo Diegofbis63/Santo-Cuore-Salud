@@ -87,27 +87,30 @@ const ReservarPage = () => {
                     </div>
 
                     <div ref={chatContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {messages.map(m => (
-                            <motion.div
-                                key={m.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                style={{
-                                    alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-                                    padding: '14px 20px',
-                                    borderRadius: m.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
-                                    fontSize: '1rem',
-                                    maxWidth: '85%',
-                                    lineHeight: '1.5',
-                                    background: m.role === 'user' ? '#008389' : 'rgba(255,255,255,0.07)',
-                                    color: 'white',
-                                    boxShadow: m.role === 'user' ? '0 10px 20px rgba(0,131,137,0.2)' : 'none',
-                                    border: '1px solid rgba(255,255,255,0.05)'
-                                }}
-                            >
-                                {m.content}
-                            </motion.div>
-                        ))}
+                        {messages.map(m => {
+                            if (!m.content) return null;
+                            return (
+                                <motion.div
+                                    key={m.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    style={{
+                                        alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                                        padding: '14px 20px',
+                                        borderRadius: m.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
+                                        fontSize: '1rem',
+                                        maxWidth: '85%',
+                                        lineHeight: '1.5',
+                                        background: m.role === 'user' ? '#008389' : 'rgba(255,255,255,0.07)',
+                                        color: 'white',
+                                        boxShadow: m.role === 'user' ? '0 10px 20px rgba(0,131,137,0.2)' : 'none',
+                                        border: '1px solid rgba(255,255,255,0.05)'
+                                    }}
+                                >
+                                    {m.content}
+                                </motion.div>
+                            );
+                        })}
                         {isLoading && messages[messages.length - 1].role === 'user' && (
                             <div style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '15px', display: 'flex', gap: '5px' }}>
                                 <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1 }}>.</motion.span>
