@@ -4,6 +4,8 @@ import { z } from 'zod';
 
 // We run as a Node.js serverless function to ensure streams and `fetch` work 100% reliably.
 
+export const runtime = 'edge';
+
 export async function POST(req: Request) {
     try {
         const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSyCMZCEHIuyOXYqGv0df0W5wLlztn_XzFcs";
