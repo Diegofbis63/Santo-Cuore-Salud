@@ -64,7 +64,7 @@ const ReservarPage = () => {
 
     return (
         <div style={{ paddingTop: '100px', minHeight: '100vh', background: '#010505', color: 'white' }}>
-            <div className="container" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 420px', gap: '40px', padding: '40px' }}>
+            <div className="container reservar-grid">
 
                 {/* Chat Column */}
                 <motion.div

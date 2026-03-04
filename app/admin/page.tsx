@@ -25,7 +25,7 @@ const AdminDashboard = () => {
             <div className="container" style={{ padding: '40px 0' }}>
 
                 {/* Header Section */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+                <div className="admin-header">
                     <div>
                         <h1 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0 }}>Panel de Control</h1>
                         <p style={{ color: '#94a3b8', marginTop: '8px' }}>Gestión de turnos y pacientes • Santo Cuore B2B</p>
@@ -41,7 +41,7 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '40px' }}>
+                <div className="admin-stats-grid">
                     {[
                         { label: 'Turnos Hoy', value: '24', icon: <Calendar />, color: 'var(--brand-teal)' },
                         { label: 'Nuevos Pacientes', value: '12', icon: <Users />, color: 'var(--brand-red)' },
@@ -91,45 +91,47 @@ const AdminDashboard = () => {
                         </div>
                     </div>
 
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead>
-                            <tr style={{ background: 'rgba(255,255,255,0.02)', color: '#64748b', fontSize: '0.85rem', textTransform: 'uppercase' }}>
-                                <th style={{ padding: '16px 24px', fontWeight: 600 }}>Paciente</th>
-                                <th style={{ padding: '16px 24px', fontWeight: 600 }}>Especialidad</th>
-                                <th style={{ padding: '16px 24px', fontWeight: 600 }}>Fecha y Hora</th>
-                                <th style={{ padding: '16px 24px', fontWeight: 600 }}>Estado</th>
-                                <th style={{ padding: '16px 24px', fontWeight: 600 }}>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {appointments.map((apt) => (
-                                <tr key={apt.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                                    <td style={{ padding: '20px 24px', fontWeight: 500 }}>{apt.patient}</td>
-                                    <td style={{ padding: '20px 24px', color: '#94a3b8' }}>{apt.specialty}</td>
-                                    <td style={{ padding: '20px 24px', color: '#94a3b8' }}>{apt.date}</td>
-                                    <td style={{ padding: '20px 24px' }}>
-                                        <span style={{
-                                            padding: '4px 12px',
-                                            borderRadius: '20px',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 600,
-                                            background: `${getStatusColor(apt.status)}15`,
-                                            color: getStatusColor(apt.status),
-                                            textTransform: 'capitalize'
-                                        }}>
-                                            {apt.status}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '20px 24px' }}>
-                                        <div style={{ display: 'flex', gap: '10px' }}>
-                                            <button style={{ color: '#10b981', background: 'none', border: 'none', cursor: 'pointer' }}><CheckCircle size={18} /></button>
-                                            <button style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><XCircle size={18} /></button>
-                                        </div>
-                                    </td>
+                    <div className="table-responsive">
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
+                            <thead>
+                                <tr style={{ background: 'rgba(255,255,255,0.02)', color: '#64748b', fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                                    <th style={{ padding: '16px 24px', fontWeight: 600 }}>Paciente</th>
+                                    <th style={{ padding: '16px 24px', fontWeight: 600 }}>Especialidad</th>
+                                    <th style={{ padding: '16px 24px', fontWeight: 600 }}>Fecha y Hora</th>
+                                    <th style={{ padding: '16px 24px', fontWeight: 600 }}>Estado</th>
+                                    <th style={{ padding: '16px 24px', fontWeight: 600 }}>Acciones</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {appointments.map((apt) => (
+                                    <tr key={apt.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                                        <td style={{ padding: '20px 24px', fontWeight: 500 }}>{apt.patient}</td>
+                                        <td style={{ padding: '20px 24px', color: '#94a3b8' }}>{apt.specialty}</td>
+                                        <td style={{ padding: '20px 24px', color: '#94a3b8' }}>{apt.date}</td>
+                                        <td style={{ padding: '20px 24px' }}>
+                                            <span style={{
+                                                padding: '4px 12px',
+                                                borderRadius: '20px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 600,
+                                                background: `${getStatusColor(apt.status)}15`,
+                                                color: getStatusColor(apt.status),
+                                                textTransform: 'capitalize'
+                                            }}>
+                                                {apt.status}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '20px 24px' }}>
+                                            <div style={{ display: 'flex', gap: '10px' }}>
+                                                <button style={{ color: '#10b981', background: 'none', border: 'none', cursor: 'pointer' }}><CheckCircle size={18} /></button>
+                                                <button style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><XCircle size={18} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </motion.div>
             </div>
         </div>
