@@ -22,7 +22,7 @@ export async function POST(req: Request) {
         const windowedMessages = messages.slice(-6);
 
         const result = await streamText({
-            model: google('gemini-2.5-flash'),
+            model: google('gemini-3-flash-preview'),
             maxRetries: 0,
             messages: windowedMessages,
             system: `Eres la "Recepcionista Digital Inteligente de Santo Cuore", una clínica médica premium de alta gama.
