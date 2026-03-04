@@ -644,13 +644,6 @@ h4 {
     margin-top: 95px;
   }
 }
-  .brand-logo {
-    height: 110px;
-  }
-  .hero-banner-container {
-    margin-top: 130px;
-  }
-}
 
 @media (max-width: 768px) {
   .navbar {
