@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Heart, Activity, Shield, ArrowRight, Phone, MapPin, Clock, ChevronRight, CheckCircle2, Star, Quote, MessageCircle, Instagram, Facebook, Mail, Menu, X } from 'lucide-react';
 import './index.css';
 import ReservarPage from './app/reservar/page';
@@ -120,9 +120,6 @@ const Footer = () => (
 );
 
 const Home = () => {
-  const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 1000], [0, 200]);
-
   const [width, setWidth] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -569,7 +566,7 @@ const Especialidades = () => {
           </div>
         </motion.div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }} className="especialidades-grid">
           {departments.map((dept, idx) => (
             <motion.div
               key={idx}
@@ -653,7 +650,7 @@ const Staff = () => {
           </p>
         </motion.div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px' }} className="staff-grid">
           {staffMembers.map((member, idx) => (
             <motion.div
               key={idx}
@@ -712,7 +709,7 @@ const Contacto = () => {
           </p>
         </motion.div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px', marginBottom: '80px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px', marginBottom: '80px' }} className="contacto-grid">
           {/* WhatsApp Card */}
           <motion.a
             href="https://api.whatsapp.com/send?phone=543518079549"

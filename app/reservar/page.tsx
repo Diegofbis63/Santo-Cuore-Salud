@@ -267,7 +267,7 @@ const ReservarPage = () => {
         <div style={{ minHeight: '100vh', background: '#0a0a0a', paddingTop: '100px', paddingBottom: '60px', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden' }}>
 
 
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 380px', gap: '30px', alignItems: 'start', position: 'relative', zIndex: 1 }}>
+            <div className="reservar-grid" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 380px', gap: '30px', alignItems: 'start', position: 'relative', zIndex: 1 }}>
 
                 {/* ── CHAT PANEL ─────────────────────────────────────────────────── */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}

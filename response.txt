@@ -1,3 +1,0 @@
-﻿Testing URL: https://santo-cuore-salud.vercel.app/api/chat
-Status: 500
-Full Response: {"error":"Error de conexi├│n con el asistente virtual.","hint":"Verifica tu conexi├│n o reintenta en unos segundos."}

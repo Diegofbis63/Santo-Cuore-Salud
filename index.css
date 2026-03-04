@@ -632,14 +632,15 @@ h4 {
   }
 }
 
-
 @media (min-width: 1025px) {
   .navbar {
     padding: 6px 0;
   }
+
   .brand-logo {
     height: 95px;
   }
+
   .hero-banner-container {
     margin-top: 110px;
   }
@@ -682,5 +683,115 @@ h4 {
 
   .admin-stats-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ── MOBILE RESPONSIVE AUDIT (small phones ≤600px) ───────── */
+@media (max-width: 600px) {
+
+  /* Global padding */
+  .container {
+    padding: 0 14px;
+  }
+
+  /* Hero */
+  .hero-title {
+    font-size: clamp(2rem, 9vw, 2.8rem) !important;
+    line-height: 1.15;
+  }
+
+  .hero-desc {
+    font-size: 1rem !important;
+    margin-bottom: 32px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions a,
+  .hero-actions button {
+    width: 100%;
+    justify-content: center;
+    padding: 15px 20px !important;
+    font-size: 0.95rem;
+  }
+
+  .hero-banner-container {
+    height: 38vh;
+    margin-top: 90px;
+  }
+
+  /* Features */
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding-bottom: 50px;
+  }
+
+  .feature-card {
+    padding: 24px 18px;
+  }
+
+  /* About section */
+  .about-section {
+    padding: 50px 0;
+  }
+
+  /* Iframes – reduce height for small screens */
+  iframe {
+    height: 240px !important;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 50px 0 24px;
+    margin-top: 40px;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    margin-bottom: 40px;
+  }
+
+  /* Reservar page – stack chat + sidebar */
+  .reservar-grid {
+    grid-template-columns: 1fr !important;
+    padding: 0 !important;
+    gap: 16px;
+  }
+
+  /* Admin panel table scroll on mobile */
+  .table-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0;
+  }
+
+  /* Admin stats 2-col on small phones */
+  .admin-stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px;
+  }
+
+  .admin-header>div:last-child {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Prevents iOS input auto-zoom (must be 16px+) */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Minimum touch target size (48px) */
+  .btn-primary,
+  .btn-glass {
+    min-height: 48px;
   }
 }
