@@ -5,6 +5,7 @@ import {
     XCircle, Search, Filter, Download, Plus, Edit3,
     LogOut, X, Save, Eye, EyeOff, Lock, User
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 // ─── AUTH ───────────────────────────────────────────────────────────────────
 const ADMIN_USER = 'admin.santocuore';
@@ -52,23 +53,34 @@ const statusBg: Record<Status, string> = {
 
 const today = new Date().toISOString().split('T')[0];
 
-function exportToCSV(appointments: Appointment[]) {
-    // Al cambiar la primera palabra a Turno ID y agregar BOM prevenimos el error de formato SYLK en Excel
-    const headers = ['Turno ID', 'Paciente', 'Especialidad', 'Fecha y Hora', 'Estado', 'Teléfono', 'Email'];
-    const rows = appointments.map(a =>
-        [a.id, a.patient, a.specialty, a.date, a.status, a.phone, a.email]
-            .map(v => `"${v}"`)
-            .join(';') // El punto y coma funciona mejor por defecto en Excel en español
-    );
-    const csv = [headers.join(';'), ...rows].join('\n');
-    // Agregamos BOM (\uFEFF) para que Excel reconozca correctamente los tildes y el formato UTF-8
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `turnos_santo_cuore_${today}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+function exportToExcel(appointments: Appointment[]) {
+    const data = appointments.map(a => ({
+        'Nro. Turno': a.id,
+        'Paciente': a.patient,
+        'Especialidad': a.specialty,
+        'Fecha y Hora': a.date,
+        'Estado': a.status.charAt(0).toUpperCase() + a.status.slice(1),
+        'Teléfono': a.phone,
+        'Email': a.email
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    // Ajustar anchos de columnas automáticamente al exportar
+    ws['!cols'] = [
+        { wch: 12 }, // Nro Turno
+        { wch: 25 }, // Paciente
+        { wch: 20 }, // Especialidad
+        { wch: 18 }, // Fecha y Hora
+        { wch: 15 }, // Estado
+        { wch: 22 }, // Teléfono
+        { wch: 30 }  // Email
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Turnos");
+
+    XLSX.writeFile(wb, `turnos_santo_cuore_${today}.xlsx`);
 }
 
 // ─── LOGIN SCREEN ────────────────────────────────────────────────────────────
@@ -301,9 +313,9 @@ const AdminDashboard = () => {
                         <p style={{ color: '#94a3b8', marginTop: '8px' }}>Gestión de turnos y pacientes • Santo Cuore</p>
                     </div>
                     <div style={{ display: 'flex', gap: '12px' }}>
-                        <button className="btn-glass" onClick={() => exportToCSV(filtered)}
+                        <button className="btn-glass" onClick={() => exportToExcel(filtered)}
                             style={{ padding: '10px 20px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Download size={18} /> Exportar
+                            <Download size={18} /> Exportar Excel
                         </button>
                         <button className="btn-primary" onClick={() => setNewTurno(true)}
                             style={{ padding: '10px 20px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
