@@ -238,6 +238,14 @@ const AdminDashboard = () => {
     // New turno form state
     const [newForm, setNewForm] = useState({ patient: '', specialty: SPECIALTIES[0], date: '', status: 'pendiente' as Status, phone: '', email: '' });
 
+    // ── FILTER + SEARCH ───────────────────────────────────────────────────────
+    const filtered = useMemo(() => appointments.filter(a => {
+        const matchSearch = a.patient.toLowerCase().includes(search.toLowerCase()) ||
+            a.specialty.toLowerCase().includes(search.toLowerCase());
+        const matchStatus = filterStatus === 'todos' || a.status === filterStatus;
+        return matchSearch && matchStatus;
+    }), [appointments, search, filterStatus]);
+
     if (!isAuthenticated) {
         return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
     }
@@ -249,14 +257,6 @@ const AdminDashboard = () => {
     const eficiencia = appointments.length > 0
         ? Math.round((confirmados / appointments.length) * 100)
         : 0;
-
-    // ── FILTER + SEARCH ───────────────────────────────────────────────────────
-    const filtered = useMemo(() => appointments.filter(a => {
-        const matchSearch = a.patient.toLowerCase().includes(search.toLowerCase()) ||
-            a.specialty.toLowerCase().includes(search.toLowerCase());
-        const matchStatus = filterStatus === 'todos' || a.status === filterStatus;
-        return matchSearch && matchStatus;
-    }), [appointments, search, filterStatus]);
 
     // ── ACTIONS ───────────────────────────────────────────────────────────────
     const setStatus = (id: number, status: Status) =>
