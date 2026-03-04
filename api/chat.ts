@@ -40,26 +40,27 @@ export async function POST(req: Request) {
          Paso 1: Detecta especialidad.
          Paso 2: Pide nombre si no lo dio.
          Paso 3: Ofrece los horarios disponibles ANTES MENCIONADOS (usa formato persuasivo, sin asteriscos).
-      4. ACTUALIZACIÓN EN TIEMPO REAL: SIEMPRE que identifiques Nombre, Especialidad o Fecha, DEBES invocar la herramienta 'actualizarResumenTurno' para reflejarlo en la pantalla del usuario.
-      5. Cuando el usuario elija el horario, usa la herramienta 'confirmarTurno'.
-      6. MUY IMPORTANTE: SIEMPRE que llames a una herramienta, debes INCLUIR TEXTO en tu respuesta hablando normalmente con el usuario. Las herramientas funcionan en segundo plano, tu voz es la principal.
-      7. PALABRAS PROHIBIDAS: Nunca digas "base de datos", "sistemas", "IA", "aguardame un segundo mientras consulto". Simplemente dales la respuesta de manera directa como si ya lo tuvieras en tu mente.`,
+      4. ACTUALIZACIÓN EN TIEMPO REAL: SIEMPRE DEBES invocar la herramienta 'actualizarResumenTurno' en cada mensaje para responder al usuario. 
+      5. TODO el texto de tu respuesta verbal DEBE ir obligatoriamente dentro del parámetro "respuesta" de la herramienta que estés usando.
+      6. PALABRAS PROHIBIDAS: Nunca digas "base de datos", "sistemas", "IA", "aguardame un segundo mientras consulto". Simplemente dales la respuesta de manera directa como si ya lo tuvieras en tu mente.`,
             tools: {
                 actualizarResumenTurno: tool({
-                    description: 'Actualiza automáticamente la pantalla con los datos que dio el paciente (nombre, especialidad o fecha), si alguno falta envíalo vacío.',
+                    description: 'Usar SIEMPRE en cada paso para actualizar la pantalla y responder al paciente.',
                     parameters: z.object({
-                        paciente: z.string().optional().describe('Nombre del paciente'),
-                        especialidad: z.string().optional().describe('Especialidad (ej: cardiología, pediatría)'),
-                        fechaHora: z.string().optional().describe('Fecha mencionada')
+                        paciente: z.string().optional().describe('Nombre del paciente si ya lo dijo'),
+                        especialidad: z.string().optional().describe('Especialidad (ej: cardiología, pediatría) si ya lo dijo'),
+                        fechaHora: z.string().optional().describe('Fecha mencionada si ya lo dijo'),
+                        respuesta: z.string().describe('Tu respuesta verbal completa y elegantemente redactada que se le mostrará al paciente')
                     }),
                     execute: async (args) => {
                         return { updated: args };
                     }
                 }),
                 confirmarTurno: tool({
-                    description: 'Utiliza esta herramienta solo cuando el paciente ya eligió un horario específico de los que le ofreciste y ya sabes su nombre. Finaliza el proceso de reserva.',
+                    description: 'Utiliza esta herramienta solo cuando el paciente ya eligió un horario específico. Finaliza reserva.',
                     parameters: z.object({
-                        confirmado: z.boolean().describe('True para confirmar la reserva elegida')
+                        confirmado: z.boolean().describe('True para confirmar la reserva elegida'),
+                        respuesta: z.string().describe('Mensaje de despedida informando que lo esperamos en la clínica')
                     }),
                     execute: async () => {
                         return {

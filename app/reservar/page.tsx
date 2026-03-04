@@ -88,7 +88,14 @@ const ReservarPage = () => {
 
                     <div ref={chatContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         {messages.map(m => {
-                            if (!m.content) return null;
+                            let contentToDisplay = m.content;
+                            if (!contentToDisplay && m.toolInvocations && m.toolInvocations.length > 0) {
+                                const tool = m.toolInvocations[0];
+                                if (tool && tool.args && (tool.args as any).respuesta) {
+                                    contentToDisplay = (tool.args as any).respuesta;
+                                }
+                            }
+                            if (!contentToDisplay) return null;
                             return (
                                 <motion.div
                                     key={m.id}
@@ -107,7 +114,7 @@ const ReservarPage = () => {
                                         border: '1px solid rgba(255,255,255,0.05)'
                                     }}
                                 >
-                                    {m.content}
+                                    {contentToDisplay}
                                 </motion.div>
                             );
                         })}
