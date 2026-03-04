@@ -270,7 +270,7 @@ const ReservarPage = () => {
             <div className="reservar-grid" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 380px', gap: '30px', alignItems: 'start', position: 'relative', zIndex: 1 }}>
 
                 {/* ── CHAT PANEL ─────────────────────────────────────────────────── */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                <motion.div className="chat-panel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                     style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '28px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
 
                     {/* Header */}

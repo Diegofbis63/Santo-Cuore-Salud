@@ -102,12 +102,13 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
 
             <motion.div
+                className="admin-login-card"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 style={{
                     background: 'rgba(255,255,255,0.03)',
                     border: '1px solid rgba(255,255,255,0.06)',
-                    borderRadius: '24px', padding: '48px', width: '100%', maxWidth: '400px',
+                    borderRadius: '24px', padding: '48px', width: '100%', maxWidth: '460px',
                     position: 'relative', zIndex: 1, backdropFilter: 'blur(10px)'
                 }}
             >
@@ -489,10 +490,10 @@ const AdminDashboardContent = ({ setIsAuthenticated }: { setIsAuthenticated: (va
                                         </td>
                                     </tr>
                                 ) : filtered.map(apt => (
-                                    <tr key={apt.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s' }}>
-                                        <td style={{ padding: '18px 24px', fontWeight: 500 }}>{apt.patient}</td>
-                                        <td style={{ padding: '18px 24px', color: '#94a3b8' }}>{apt.specialty}</td>
-                                        <td style={{ padding: '18px 24px', color: '#94a3b8', fontFamily: 'monospace', fontSize: '0.875rem' }}>{apt.date}</td>
+                                    <tr key={apt.id} className="admin-table-row" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s' }}>
+                                        <td className="admin-td-primary" style={{ padding: '18px 24px', fontWeight: 500 }}>{apt.patient}</td>
+                                        <td className="admin-td-secondary" style={{ padding: '18px 24px', color: '#94a3b8' }}>{apt.specialty}</td>
+                                        <td className="admin-td-secondary" style={{ padding: '18px 24px', color: '#94a3b8', fontFamily: 'monospace', fontSize: '0.875rem' }}>{apt.date}</td>
                                         <td style={{ padding: '18px 24px' }}>
                                             <span style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, background: statusBg[apt.status], color: statusColor[apt.status], textTransform: 'capitalize' }}>
                                                 {apt.status}
