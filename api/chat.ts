@@ -18,8 +18,10 @@ export async function POST(req: Request) {
         const { messages } = await req.json();
 
         // ── SLIDING WINDOW ──────────────────────────────────────────────────────────
-        // Solo enviamos los últimos 6 mensajes al modelo. Evita consumir tokens gratis rápidamente.
-        const windowedMessages = messages.slice(-6);
+        // El flujo de reserva tiene ~10 mensajes (5 pasos × pregunta+respuesta).
+        // Usamos los últimos 14 para garantizar que NUNCA se pierda el contexto de
+        // especialidad, nombre, fecha o contacto ya dados por el paciente.
+        const windowedMessages = messages.slice(-14);
 
         const result = await streamText({
             model: google('gemini-2.5-flash'),
@@ -56,7 +58,8 @@ export async function POST(req: Request) {
       2. No des diagnósticos, solo orientá al especialista adecuado.
       3. SIEMPRE invocar una herramienta por mensaje ('actualizarResumenTurno' mientras se recopilan datos, 'confirmarTurno' solo cuando tenés: nombre + especialidad + fechaHora + contacto).
       4. TODO el texto de tu respuesta verbal va SIEMPRE en el parámetro "respuesta" de la herramienta.
-      5. PALABRAS PROHIBIDAS: "base de datos", "sistemas", "IA", "procesando", "buscando".`,
+      5. PALABRAS PROHIBIDAS: "base de datos", "sistemas", "IA", "procesando", "buscando".
+      6. CONTEXTO ACUMULADO: Antes de responder, revisá TODOS los mensajes anteriores del historial para recuperar cualquier dato ya dado (especialidad, nombre, fecha, contacto). NUNCA volvás a pedir un dato que el paciente ya proporcionó en mensajes anteriores.`,
             tools: {
                 actualizarResumenTurno: tool({
                     description: 'Usar cuando aún estás recopilando datos del turno. Contiene tu respuesta verbal al usuario.',
