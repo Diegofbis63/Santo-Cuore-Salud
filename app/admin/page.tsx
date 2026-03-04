@@ -239,8 +239,19 @@ const labelStyle: React.CSSProperties = {
 };
 
 // ─── MAIN DASHBOARD ──────────────────────────────────────────────────────────
+// ─── MAIN DASHBOARD WRAPPER ──────────────────────────────────────────────────
 const AdminDashboard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    if (!isAuthenticated) {
+        return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
+    }
+
+    return <AdminDashboardContent setIsAuthenticated={setIsAuthenticated} />;
+};
+
+// ─── DASHBOARD CONTENT ───────────────────────────────────────────────────────
+const AdminDashboardContent = ({ setIsAuthenticated }: { setIsAuthenticated: (val: boolean) => void }) => {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [search, setSearch] = useState('');
     const [filterStatus, setFilterStatus] = useState<string>('todos');
@@ -271,10 +282,6 @@ const AdminDashboard = () => {
         return matchSearch && matchStatus;
     }), [appointments, search, filterStatus]);
 
-    if (!isAuthenticated) {
-        return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
-    }
-
     // ── STATS ────────────────────────────────────────────────────────────────
     const todayTurnos = appointments.filter(a => a.date.startsWith(today)).length;
     const pendientes = appointments.filter(a => a.status === 'pendiente').length;
@@ -299,14 +306,11 @@ const AdminDashboard = () => {
     };
 
     useEffect(() => {
-        if (isAuthenticated) {
-            fetchAppointments();
-        }
-    }, [isAuthenticated]);
+        fetchAppointments();
+    }, []);
 
     // ── ACTIONS ───────────────────────────────────────────────────────────────
     const setStatus = async (id: number, status: Status) => {
-        // Optimistic update
         const backup = [...appointments];
         setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
         try {
@@ -318,7 +322,7 @@ const AdminDashboard = () => {
             if (!res.ok) throw new Error('Falló al actualizar estado');
         } catch (err) {
             console.error(err);
-            setAppointments(backup); // revertir en caso de fallo
+            setAppointments(backup);
             fetchAppointments();
         }
     };
@@ -331,8 +335,6 @@ const AdminDashboard = () => {
     const saveEdit = async () => {
         if (!editTarget) return;
         const currentTargetId = editTarget.id;
-
-        // Optimistic update
         const backup = [...appointments];
         const formData = { id: currentTargetId, ...editForm };
         setAppointments(prev => prev.map(a => a.id === currentTargetId ? { ...a, ...editForm } as Appointment : a));
@@ -346,7 +348,6 @@ const AdminDashboard = () => {
             });
             if (!res.ok) throw new Error('Falló al editar el turno');
             const updated = await res.json();
-            // Optional: update with the real returned record
             setAppointments(prev => prev.map(a => a.id === updated.id ? updated : a));
         } catch (err) {
             console.error(err);
@@ -370,7 +371,7 @@ const AdminDashboard = () => {
                 setAppointments(prev => [...prev, inserted]);
             } else {
                 console.error(await res.json());
-                fetchAppointments(); // refresh por las dudas
+                fetchAppointments();
             }
         } catch (err) {
             console.error(err);
@@ -381,7 +382,6 @@ const AdminDashboard = () => {
 
     return (
         <div style={{ paddingTop: '110px', minHeight: '100vh', background: '#0a0a0a', color: '#f8fafc', position: 'relative', overflow: 'hidden' }}>
-            {/* Ambient Glows */}
             <div style={{
                 position: 'fixed', width: '60vw', height: '60vw', borderRadius: '50%',
                 background: 'rgba(202, 20, 28, 0.12)', filter: 'blur(120px)',
@@ -394,8 +394,6 @@ const AdminDashboard = () => {
             }} />
 
             <div className="container" style={{ padding: '40px 0', position: 'relative', zIndex: 1 }}>
-
-                {/* Header */}
                 <div className="admin-header">
                     <div>
                         <h1 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0 }}>Panel de Control</h1>
@@ -417,7 +415,6 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Stats */}
                 <div className="admin-stats-grid">
                     {([
                         { id: 'hoy', label: 'Turnos Hoy', value: String(todayTurnos), Icon: Calendar, color: 'var(--brand-teal)' },
@@ -439,8 +436,6 @@ const AdminDashboard = () => {
                                 background: filterStatus === stat.id ? `rgba(255,255,255,0.04)` : undefined,
                                 transition: 'all 0.2s ease'
                             }}
-                            onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
-                            onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
                         >
                             <div style={{ padding: '12px', borderRadius: '12px', background: `${stat.color}15`, color: stat.color }}>
                                 <stat.Icon size={22} />
@@ -453,14 +448,12 @@ const AdminDashboard = () => {
                     ))}
                 </div>
 
-                {/* Table */}
                 <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
                     className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
 
                     <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                         <h3 style={{ margin: 0 }}>Próximos Turnos <span style={{ color: '#64748b', fontWeight: 400, fontSize: '0.9rem' }}>({filtered.length} resultados)</span></h3>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            {/* Search */}
                             <div style={{ position: 'relative' }}>
                                 <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
                                 <input
@@ -471,7 +464,6 @@ const AdminDashboard = () => {
                                     style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px 12px 8px 36px', fontSize: '0.875rem', color: 'white', width: '240px' }}
                                 />
                             </div>
-                            {/* Filter dropdown */}
                             <div style={{ position: 'relative' }}>
                                 <button
                                     onClick={() => setShowFilter(!showFilter)}
@@ -512,10 +504,7 @@ const AdminDashboard = () => {
                                         </td>
                                     </tr>
                                 ) : filtered.map(apt => (
-                                    <tr key={apt.id}
-                                        style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s' }}
-                                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
-                                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                                    <tr key={apt.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s' }}>
                                         <td style={{ padding: '18px 24px', fontWeight: 500 }}>{apt.patient}</td>
                                         <td style={{ padding: '18px 24px', color: '#94a3b8' }}>{apt.specialty}</td>
                                         <td style={{ padding: '18px 24px', color: '#94a3b8', fontFamily: 'monospace', fontSize: '0.875rem' }}>{apt.date}</td>
@@ -526,24 +515,20 @@ const AdminDashboard = () => {
                                         </td>
                                         <td style={{ padding: '18px 24px' }}>
                                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                                {/* Confirm */}
                                                 <button title="Confirmar turno" onClick={() => setStatus(apt.id, 'confirmado')}
-                                                    style={{ color: '#10b981', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}>
+                                                    style={{ color: '#10b981', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer' }}>
                                                     <CheckCircle size={16} />
                                                 </button>
-                                                {/* Cancel */}
                                                 <button title="Cancelar turno" onClick={() => setStatus(apt.id, 'cancelado')}
-                                                    style={{ color: '#ef4444', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}>
+                                                    style={{ color: '#ef4444', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer' }}>
                                                     <XCircle size={16} />
                                                 </button>
-                                                {/* Pendiente */}
                                                 <button title="Marcar como pendiente" onClick={() => setStatus(apt.id, 'pendiente')}
-                                                    style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}>
+                                                    style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer' }}>
                                                     <Clock size={16} />
                                                 </button>
-                                                {/* Edit */}
                                                 <button title="Editar turno" onClick={() => openEdit(apt)}
-                                                    style={{ color: '#818cf8', background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.25)', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}>
+                                                    style={{ color: '#818cf8', background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.25)', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer' }}>
                                                     <Edit3 size={16} />
                                                 </button>
                                             </div>
@@ -556,7 +541,6 @@ const AdminDashboard = () => {
                 </motion.div>
             </div>
 
-            {/* ── EDIT MODAL ── */}
             <AnimatePresence>
                 {editTarget && (
                     <Modal title={`Editar Turno — ${editTarget.patient}`} onClose={() => setEditTarget(null)}>
@@ -592,8 +576,8 @@ const AdminDashboard = () => {
                                 <input style={inputStyle} type="email" value={editForm.email || ''} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} />
                             </div>
                             <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
-                                <button onClick={() => setEditTarget(null)} className="btn-glass" style={{ flex: 1, padding: '10px', fontSize: '0.9rem' }}>Cancelar</button>
-                                <button onClick={saveEdit} className="btn-primary" style={{ flex: 1, padding: '10px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                <button onClick={() => setEditTarget(null)} className="btn-glass" style={{ flex: 1, padding: '10px' }}>Cancelar</button>
+                                <button onClick={saveEdit} className="btn-primary" style={{ flex: 1, padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                     <Save size={16} /> Guardar Cambios
                                 </button>
                             </div>
@@ -602,7 +586,6 @@ const AdminDashboard = () => {
                 )}
             </AnimatePresence>
 
-            {/* ── NUEVO TURNO MODAL ── */}
             <AnimatePresence>
                 {newTurno && (
                     <Modal title="Nuevo Turno" onClose={() => setNewTurno(false)}>
@@ -628,21 +611,10 @@ const AdminDashboard = () => {
                                     <option value="confirmado">Confirmado</option>
                                 </select>
                             </div>
-                            <div>
-                                <label style={labelStyle}>Teléfono</label>
-                                <input style={inputStyle} placeholder="+54 9 351 000 0000" value={newForm.phone} onChange={e => setNewForm(p => ({ ...p, phone: e.target.value }))} />
-                            </div>
-                            <div>
-                                <label style={labelStyle}>Email</label>
-                                <input style={inputStyle} type="email" placeholder="paciente@email.com" value={newForm.email} onChange={e => setNewForm(p => ({ ...p, email: e.target.value }))} />
-                            </div>
-                            {(!newForm.patient || !newForm.date) && (
-                                <p style={{ color: '#f59e0b', fontSize: '0.8rem', margin: 0 }}>* Completá al menos Nombre y Fecha para continuar.</p>
-                            )}
                             <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
-                                <button onClick={() => setNewTurno(false)} className="btn-glass" style={{ flex: 1, padding: '10px', fontSize: '0.9rem' }}>Cancelar</button>
+                                <button onClick={() => setNewTurno(false)} className="btn-glass" style={{ flex: 1, padding: '10px' }}>Cancelar</button>
                                 <button onClick={createTurno} disabled={!newForm.patient || !newForm.date} className="btn-primary"
-                                    style={{ flex: 1, padding: '10px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (!newForm.patient || !newForm.date) ? 0.5 : 1 }}>
+                                    style={{ flex: 1, padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (!newForm.patient || !newForm.date) ? 0.5 : 1 }}>
                                     <Plus size={16} /> Crear Turno
                                 </button>
                             </div>
