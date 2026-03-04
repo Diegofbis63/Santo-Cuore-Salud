@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -311,12 +309,12 @@ const AdminDashboard = () => {
 
                 {/* Stats */}
                 <div className="admin-stats-grid">
-                    {[
-                        { label: 'Turnos Hoy', value: todayTurnos, icon: <Calendar />, color: 'var(--brand-teal)' },
-                        { label: 'Total Pacientes', value: appointments.length, icon: <Users />, color: 'var(--brand-red)' },
-                        { label: 'Pendientes', value: pendientes, icon: <Clock />, color: '#f59e0b' },
-                        { label: 'Eficiencia', value: `${eficiencia}%`, icon: <Activity />, color: '#10b981' },
-                    ].map((stat, i) => (
+                    {([
+                        { label: 'Turnos Hoy', value: String(todayTurnos), Icon: Calendar, color: 'var(--brand-teal)' },
+                        { label: 'Total Pacientes', value: String(appointments.length), Icon: Users, color: 'var(--brand-red)' },
+                        { label: 'Pendientes', value: String(pendientes), Icon: Clock, color: '#f59e0b' },
+                        { label: 'Eficiencia', value: `${eficiencia}%`, Icon: Activity, color: '#10b981' },
+                    ] as const).map((stat, i) => (
                         <motion.div
                             key={i}
                             initial={{ opacity: 0, y: 20 }}
@@ -326,7 +324,7 @@ const AdminDashboard = () => {
                             style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}
                         >
                             <div style={{ padding: '12px', borderRadius: '12px', background: `${stat.color}15`, color: stat.color }}>
-                                {stat.icon}
+                                <stat.Icon size={22} />
                             </div>
                             <div>
                                 <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{stat.label}</span>
