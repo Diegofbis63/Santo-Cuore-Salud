@@ -15,12 +15,16 @@ export async function POST(req: Request) {
         const google = createGoogleGenerativeAI({
             apiKey: key,
         });
-
         const { messages } = await req.json();
+
+        // ── SLIDING WINDOW ──────────────────────────────────────────────────────────
+        // Solo enviamos los últimos 6 mensajes al modelo. Evita consumir tokens gratis rápidamente.
+        const windowedMessages = messages.slice(-6);
 
         const result = await streamText({
             model: google('gemini-2.5-flash'),
-            messages,
+            maxRetries: 0,
+            messages: windowedMessages,
             system: `Eres la "Recepcionista Digital Inteligente de Santo Cuore", una clínica médica premium de alta gama.
       Tu objetivo es realizar un triage inicial amable, profesional y rápido.
       
@@ -87,7 +91,7 @@ export async function POST(req: Request) {
                     }
                 }),
             },
-            maxSteps: 3,
+            maxSteps: 2,
         });
 
         return result.toDataStreamResponse();
