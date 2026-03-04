@@ -226,7 +226,7 @@ h4 {
 }
 
 .brand-logo {
-  height: 125px;
+  height: 90px;
   width: auto;
   transition: transform 0.3s ease, filter 0.3s ease;
   position: relative;
@@ -235,8 +235,9 @@ h4 {
 
 @media (min-width: 1024px) {
   .brand-logo {
-    margin-top: 25px;
-    margin-bottom: -55px; 
+    height: 100px;
+    margin-top: 0;
+    margin-bottom: 0;
   }
 }
 
@@ -287,7 +288,7 @@ h4 {
 
 @media (min-width: 1024px) {
   .hero-banner-container {
-    margin-top: 58px; 
+    margin-top: 120px;
   }
 }
 
