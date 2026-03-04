@@ -53,14 +53,16 @@ const statusBg: Record<Status, string> = {
 const today = new Date().toISOString().split('T')[0];
 
 function exportToCSV(appointments: Appointment[]) {
-    const headers = ['ID', 'Paciente', 'Especialidad', 'Fecha y Hora', 'Estado', 'Teléfono', 'Email'];
+    // Al cambiar la primera palabra a Turno ID y agregar BOM prevenimos el error de formato SYLK en Excel
+    const headers = ['Turno ID', 'Paciente', 'Especialidad', 'Fecha y Hora', 'Estado', 'Teléfono', 'Email'];
     const rows = appointments.map(a =>
         [a.id, a.patient, a.specialty, a.date, a.status, a.phone, a.email]
             .map(v => `"${v}"`)
-            .join(',')
+            .join(';') // El punto y coma funciona mejor por defecto en Excel en español
     );
-    const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const csv = [headers.join(';'), ...rows].join('\n');
+    // Agregamos BOM (\uFEFF) para que Excel reconozca correctamente los tildes y el formato UTF-8
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -242,7 +244,14 @@ const AdminDashboard = () => {
     const filtered = useMemo(() => appointments.filter(a => {
         const matchSearch = a.patient.toLowerCase().includes(search.toLowerCase()) ||
             a.specialty.toLowerCase().includes(search.toLowerCase());
-        const matchStatus = filterStatus === 'todos' || a.status === filterStatus;
+
+        let matchStatus = true;
+        if (filterStatus === 'hoy') {
+            matchStatus = a.date.startsWith(today);
+        } else if (filterStatus !== 'todos') {
+            matchStatus = a.status === filterStatus;
+        }
+
         return matchSearch && matchStatus;
     }), [appointments, search, filterStatus]);
 
@@ -310,10 +319,10 @@ const AdminDashboard = () => {
                 {/* Stats */}
                 <div className="admin-stats-grid">
                     {([
-                        { label: 'Turnos Hoy', value: String(todayTurnos), Icon: Calendar, color: 'var(--brand-teal)' },
-                        { label: 'Total Pacientes', value: String(appointments.length), Icon: Users, color: 'var(--brand-red)' },
-                        { label: 'Pendientes', value: String(pendientes), Icon: Clock, color: '#f59e0b' },
-                        { label: 'Eficiencia', value: `${eficiencia}%`, Icon: Activity, color: '#10b981' },
+                        { id: 'hoy', label: 'Turnos Hoy', value: String(todayTurnos), Icon: Calendar, color: 'var(--brand-teal)' },
+                        { id: 'todos', label: 'Total Pacientes', value: String(appointments.length), Icon: Users, color: 'var(--brand-red)' },
+                        { id: 'pendiente', label: 'Pendientes', value: String(pendientes), Icon: Clock, color: '#f59e0b' },
+                        { id: 'confirmado', label: 'Eficiencia', value: `${eficiencia}%`, Icon: Activity, color: '#10b981' },
                     ] as const).map((stat, i) => (
                         <motion.div
                             key={i}
@@ -321,7 +330,16 @@ const AdminDashboard = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.08 }}
                             className="glass-card"
-                            style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}
+                            onClick={() => setFilterStatus(stat.id)}
+                            style={{
+                                padding: '24px', display: 'flex', alignItems: 'center', gap: '20px',
+                                cursor: 'pointer',
+                                border: filterStatus === stat.id ? `1px solid ${stat.color}` : '1px solid rgba(255,255,255,0.05)',
+                                background: filterStatus === stat.id ? `rgba(255,255,255,0.04)` : undefined,
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
+                            onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
                         >
                             <div style={{ padding: '12px', borderRadius: '12px', background: `${stat.color}15`, color: stat.color }}>
                                 <stat.Icon size={22} />
@@ -363,7 +381,7 @@ const AdminDashboard = () => {
                                     {showFilter && (
                                         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                                             style={{ position: 'absolute', top: '44px', right: 0, background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', zIndex: 100, minWidth: '160px' }}>
-                                            {['todos', 'pendiente', 'confirmado', 'cancelado'].map(s => (
+                                            {['todos', 'hoy', 'pendiente', 'confirmado', 'cancelado'].map(s => (
                                                 <button key={s} onClick={() => { setFilterStatus(s); setShowFilter(false); }}
                                                     style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', background: filterStatus === s ? 'rgba(255,255,255,0.05)' : 'none', border: 'none', color: filterStatus === s ? 'white' : '#94a3b8', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', textTransform: 'capitalize' }}>
                                                     {s}
