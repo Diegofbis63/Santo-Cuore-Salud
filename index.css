@@ -635,8 +635,15 @@ h4 {
 
 @media (min-width: 1025px) {
   .navbar {
-    padding: 9px 0;
+    padding: 6px 0;
   }
+  .brand-logo {
+    height: 80px;
+  }
+  .hero-banner-container {
+    margin-top: 95px;
+  }
+}
   .brand-logo {
     height: 110px;
   }
