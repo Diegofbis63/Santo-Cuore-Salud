@@ -7,33 +7,42 @@ import './index.css';
 import ReservarPage from './app/reservar/page';
 import AdminDashboard from './app/admin/page';
 
+import { Sun, Moon } from 'lucide-react';
+
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
+  // ── Theme toggle ──────────────────────────────────────────
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('sc-theme') as 'dark' | 'light') || 'dark';
+    }
+    return 'dark';
+  });
+
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('sc-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+
+  // ── Scroll ────────────────────────────────────────────────
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close menu when route changes
-  useEffect(() => {
-    setIsOpen(false);
-  }, [location]);
+  useEffect(() => { setIsOpen(false); }, [location]);
 
   return (
     <nav className={`navbar ${scrolled ? 'scrolled' : ''} ${isOpen ? 'menu-open' : ''}`}>
       <div className="container nav-content">
         <Link to="/" className="logo">
-          <img
-            src="/logo.png"
-            alt="Santo Cuore"
-            className="brand-logo"
-          />
+          <img src="/logo.png" alt="Santo Cuore" className="brand-logo" />
         </Link>
 
         {/* Desktop Links */}
@@ -43,13 +52,55 @@ const Navbar = () => {
           <Link to="/staff" className={`nav-link ${location.pathname === '/staff' ? 'active' : ''}`}>Staff</Link>
           <Link to="/reservar" className={`nav-link ${location.pathname === '/reservar' ? 'active' : ''}`}>Turnos</Link>
           <Link to="/contacto" className={`nav-link ${location.pathname === '/contacto' ? 'active' : ''}`}>Contacto</Link>
-          <Link to="/admin" className="btn-primary" style={{ padding: '8px 24px', fontSize: '0.9rem', marginLeft: '16px' }}>Acceso</Link>
+
+          {/* ── Modo A/B Toggle ── */}
+          <motion.button
+            onClick={toggleTheme}
+            className="theme-toggle-btn"
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.93 }}
+            title={theme === 'dark' ? 'Cambiar a Modo B (Clínica)' : 'Cambiar a Modo A (Premium Dark)'}
+            aria-label="Cambiar tema visual"
+          >
+            <motion.span
+              key={theme}
+              initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
+              animate={{ opacity: 1, rotate: 0, scale: 1 }}
+              exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            </motion.span>
+            {theme === 'dark' ? 'Modo B' : 'Modo A'}
+          </motion.button>
+
+          <Link to="/admin" className="btn-primary" style={{ padding: '8px 24px', fontSize: '0.9rem', marginLeft: '4px' }}>Acceso</Link>
         </div>
 
         {/* Mobile Toggle */}
-        <button className="mobile-menu-toggle" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Mobile theme toggle */}
+          <motion.button
+            onClick={toggleTheme}
+            className="theme-toggle-btn theme-toggle-mobile"
+            whileTap={{ scale: 0.9 }}
+            aria-label="Cambiar tema"
+          >
+            <motion.span
+              key={theme + '-m'}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.25 }}
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </motion.span>
+          </motion.button>
+          <button className="mobile-menu-toggle" onClick={() => setIsOpen(!isOpen)}>
+            {isOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
 
         {/* Mobile Menu Overlay */}
         <div className={`mobile-menu ${isOpen ? 'open' : ''}`}>
@@ -61,20 +112,15 @@ const Navbar = () => {
 
           <div className="mobile-menu-footer">
             <Link to="/admin" className="btn-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '20px' }}>Acceso Administrativo</Link>
-            <div className="mobile-contact-item">
-              <Phone size={18} />
-              <span>+54 (351) 4241928</span>
-            </div>
-            <div className="mobile-contact-item">
-              <MapPin size={18} />
-              <span>9 de Julio 660, Córdoba</span>
-            </div>
+            <div className="mobile-contact-item"><Phone size={18} /><span>+54 (351) 4241928</span></div>
+            <div className="mobile-contact-item"><MapPin size={18} /><span>9 de Julio 660, Córdoba</span></div>
           </div>
         </div>
       </div>
     </nav>
   );
 };
+
 
 const Footer = () => (
   <footer className="footer">
