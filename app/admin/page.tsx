@@ -96,16 +96,29 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
     return (
         <div style={{
-            minHeight: '100vh', background: '#020617', display: 'flex',
-            alignItems: 'center', justifyContent: 'center'
+            minHeight: '100vh', background: '#0a0a0a', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden'
         }}>
+            {/* Ambient Glows */}
+            <div style={{
+                position: 'fixed', width: '60vw', height: '60vw', borderRadius: '50%',
+                background: 'rgba(202, 20, 28, 0.12)', filter: 'blur(120px)',
+                top: '-20vw', right: '-10vw', zIndex: 0, pointerEvents: 'none'
+            }} />
+            <div style={{
+                position: 'fixed', width: '50vw', height: '50vw', borderRadius: '50%',
+                background: 'rgba(0, 131, 137, 0.12)', filter: 'blur(120px)',
+                bottom: '-10vw', left: '-10vw', zIndex: 0, pointerEvents: 'none'
+            }} />
+
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: '20px', padding: '48px', width: '100%', maxWidth: '400px'
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    borderRadius: '24px', padding: '48px', width: '100%', maxWidth: '400px',
+                    position: 'relative', zIndex: 1, backdropFilter: 'blur(10px)'
                 }}
             >
                 <div style={{ textAlign: 'center', marginBottom: '36px' }}>
@@ -134,9 +147,9 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
                             value={user}
                             onChange={e => setUser(e.target.value)}
                             style={{
-                                width: '100%', background: '#0f172a',
+                                width: '100%', background: 'rgba(255,255,255,0.05)',
                                 border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '10px', padding: '12px 12px 12px 42px',
+                                borderRadius: '12px', padding: '12px 12px 12px 42px',
                                 color: 'white', fontSize: '0.95rem', boxSizing: 'border-box'
                             }}
                         />
@@ -193,9 +206,9 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
                 exit={{ opacity: 0, scale: 0.95 }}
                 onClick={e => e.stopPropagation()}
                 style={{
-                    background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '16px', width: '100%', maxWidth: '520px',
-                    maxHeight: '90vh', overflowY: 'auto'
+                    background: '#141414', border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '24px', width: '100%', maxWidth: '520px',
+                    maxHeight: '90vh', overflowY: 'auto', backdropFilter: 'blur(20px)'
                 }}
             >
                 <div style={{
@@ -214,9 +227,9 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 }
 
 const inputStyle: React.CSSProperties = {
-    width: '100%', background: '#020617',
+    width: '100%', background: 'rgba(255,255,255,0.05)',
     border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: '8px', padding: '10px 12px',
+    borderRadius: '10px', padding: '10px 12px',
     color: 'white', fontSize: '0.9rem', boxSizing: 'border-box'
 };
 
@@ -367,8 +380,20 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div style={{ paddingTop: '110px', minHeight: '100vh', background: '#020617', color: '#f8fafc' }}>
-            <div className="container" style={{ padding: '40px 0' }}>
+        <div style={{ paddingTop: '110px', minHeight: '100vh', background: '#0a0a0a', color: '#f8fafc', position: 'relative', overflow: 'hidden' }}>
+            {/* Ambient Glows */}
+            <div style={{
+                position: 'fixed', width: '60vw', height: '60vw', borderRadius: '50%',
+                background: 'rgba(202, 20, 28, 0.12)', filter: 'blur(120px)',
+                top: '-20vw', right: '-10vw', zIndex: 0, pointerEvents: 'none'
+            }} />
+            <div style={{
+                position: 'fixed', width: '50vw', height: '50vw', borderRadius: '50%',
+                background: 'rgba(0, 131, 137, 0.12)', filter: 'blur(120px)',
+                bottom: '-10vw', left: '-10vw', zIndex: 0, pointerEvents: 'none'
+            }} />
+
+            <div className="container" style={{ padding: '40px 0', position: 'relative', zIndex: 1 }}>
 
                 {/* Header */}
                 <div className="admin-header">
@@ -443,7 +468,7 @@ const AdminDashboard = () => {
                                     placeholder="Buscar paciente o especialidad..."
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
-                                    style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '8px 12px 8px 36px', fontSize: '0.875rem', color: 'white', width: '240px' }}
+                                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px 12px 8px 36px', fontSize: '0.875rem', color: 'white', width: '240px' }}
                                 />
                             </div>
                             {/* Filter dropdown */}
