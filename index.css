@@ -1457,3 +1457,25 @@ h4 {
   color: #008389 !important;
   font-size: 0.9rem !important;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   MODO B — "Virtudes y Valores" inner sub-cards
+   ═══════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .virtud-item {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 131, 137, 0.18) !important;
+  border-left: 3px solid var(--brand-teal) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05) !important;
+  color: #4a5568 !important;
+  transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+}
+
+[data-theme="light"] .virtud-item:hover {
+  box-shadow: 0 6px 20px rgba(0, 131, 137, 0.12) !important;
+  border-left-color: var(--brand-red) !important;
+}
+
+[data-theme="light"] .virtud-item span {
+  color: #4a5568 !important;
+}

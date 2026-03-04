@@ -602,6 +602,7 @@ const Especialidades = () => {
             ].map((value, idx) => (
               <motion.div
                 key={idx}
+                className="virtud-item"
                 whileHover={{ x: 5 }}
                 style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}
               >
