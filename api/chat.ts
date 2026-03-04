@@ -22,50 +22,29 @@ export async function POST(req: Request) {
         const windowedMessages = messages.slice(-6);
 
         const result = await streamText({
-            model: google('gemini-3-flash-preview'),
+            model: google('gemini-2.5-flash'),
             maxRetries: 0,
             messages: windowedMessages,
             system: `Eres la "Recepcionista Digital Inteligente de Santo Cuore", una clínica médica premium de alta gama.
-      Tu objetivo es realizar un triage inicial amable, profesional y rápido.
+      Tu objetivo es realizar un triage inicial amable, profesional y rápido para agendar turnos.
       
-      Debes orientar al paciente según sus síntomas a una de estas especialidades:
-      - Traumatología
-      - Cardiología
-      - Pediatría
-      - Ginecología
-      - Dermatología
-      - Nutrición / Medicina Estética (Especialidades VIP)
+      Especialidades disponibles: Traumatología, Cardiología, Pediatría, Ginecología, Dermatología, Nutrición / Medicina Estética.
+      
+      **DISPONIBILIDAD DE AGENDA (Base de datos en tiempo real):**
+      - Siempre tienes turnos libres para cualquier especialidad en estos 3 horarios fijos: "Mañana a las 10:00 AM", "Mañana a las 04:30 PM" y "Pasado mañana a las 11:15 AM".
       
       Instrucciones Críticas:
       1. Usa un tono sumamente elegante y cálido (usa 'vos' de forma respetuosa).
       2. No des diagnósticos, solo recomienda al especialista adecuado.
-      3. Nunca pidas multitudes de datos a la vez; guía la conversación paso a paso (primero especialidad, luego nombre, luego opciones de turnos).
-      4. Si el paciente menciona una especialidad, siempre utiliza la herramienta consultarDisponibilidad de forma invisible (sin advertirle que "andas buscando", hazlo como una secretaria humana).
-      5. La IA registrará los datos detectados paralelamente mediante actualizarResumenTurno.
-      6. REGLA DE FORMATO AL LISTAR HORARIOS: No utilices listas con asteriscos (*), formatea los horarios de modo fluido y persuasivo (Ejemplo: "Te cuento que tengo disponibilidad para mañana a las 10:00 o a las 16:30. También podría ser el jueves a las 11:15. ¿Qué te queda más cómodo?").
-      7. PALABRAS PROHIBIDAS: Nunca digas "base de datos", "sistemas", "IA", "inteligencia artificial" o "procesando". Debes actuar siempre como una prestigiosa recepcionista de carne y hueso.
-      8. REGLA VISUAL DE ESPERA: Si vas a requerir un segundo al usar herramientas de fondo, en el mismo mensaje introduce una fase suave, como por ejemplo: "Aguardame un segundo mientras reviso la agenda..." o "Dame un instante que verifico los turnos..."`,
+      3. Nunca pidas multitudes de datos a la vez; guía la conversación paso a paso:
+         Paso 1: Detecta especialidad.
+         Paso 2: Pide nombre si no lo dio.
+         Paso 3: Ofrece los horarios disponibles ANTES MENCIONADOS (usa formato persuasivo, sin asteriscos).
+      4. ACTUALIZACIÓN EN TIEMPO REAL: SIEMPRE que identifiques Nombre, Especialidad o Fecha, DEBES invocar la herramienta 'actualizarResumenTurno' para reflejarlo en la pantalla del usuario.
+      5. Cuando el usuario elija el horario, usa la herramienta 'confirmarTurno'.
+      6. MUY IMPORTANTE: SIEMPRE que llames a una herramienta, debes INCLUIR TEXTO en tu respuesta hablando normalmente con el usuario. Las herramientas funcionan en segundo plano, tu voz es la principal.
+      7. PALABRAS PROHIBIDAS: Nunca digas "base de datos", "sistemas", "IA", "aguardame un segundo mientras consulto". Simplemente dales la respuesta de manera directa como si ya lo tuvieras en tu mente.`,
             tools: {
-                consultarDisponibilidad: tool({
-                    description: 'Consulta los horarios y turnos que están libres para la clínica.',
-                    parameters: z.object({
-                        especialidad: z.string().describe('La especialidad buscada (ej: dermatología, cardiología)'),
-                    }),
-                    execute: async ({ especialidad }) => {
-                        console.log('Consultando agenda para:', especialidad);
-                        // Mock DB call:
-                        const horariosDisponibles = [
-                            'Mañana a las 10:00 AM',
-                            'Mañana a las 04:30 PM',
-                            'Pasado mañana a las 11:15 AM'
-                        ];
-                        return {
-                            especialidad,
-                            horarios: horariosDisponibles,
-                            mensaje: `Hay turnos libres. Preséntaselos elegantemente, sin lenguaje de máquina o listas toscas.`
-                        };
-                    }
-                }),
                 actualizarResumenTurno: tool({
                     description: 'Actualiza automáticamente la pantalla con los datos que dio el paciente (nombre, especialidad o fecha), si alguno falta envíalo vacío.',
                     parameters: z.object({
@@ -74,7 +53,6 @@ export async function POST(req: Request) {
                         fechaHora: z.string().optional().describe('Fecha mencionada')
                     }),
                     execute: async (args) => {
-                        console.log('Ejecutando actualizarResumenTurno en server:', args);
                         return { updated: args };
                     }
                 }),
@@ -86,12 +64,12 @@ export async function POST(req: Request) {
                     execute: async () => {
                         return {
                             exito: true,
-                            mensaje: 'El turno ha sido pre-agendado. Cierra la conversación de forma cálida indicando que lo esperamos en la clínica. NUNCA pidas más datos.'
+                            mensaje: 'El turno ha sido pre-agendado.'
                         };
                     }
                 }),
             },
-            maxSteps: 2,
+            maxSteps: 1, // Previene llamadas múltiples al LLM que agotan los límites de la API Key gratuita.
         });
 
         return result.toDataStreamResponse();
