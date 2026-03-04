@@ -447,6 +447,11 @@ const AdminDashboard = () => {
                                                     style={{ color: '#ef4444', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}>
                                                     <XCircle size={16} />
                                                 </button>
+                                                {/* Pendiente */}
+                                                <button title="Marcar como pendiente" onClick={() => setStatus(apt.id, 'pendiente')}
+                                                    style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}>
+                                                    <Clock size={16} />
+                                                </button>
                                                 {/* Edit */}
                                                 <button title="Editar turno" onClick={() => openEdit(apt)}
                                                     style={{ color: '#818cf8', background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.25)', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}>
