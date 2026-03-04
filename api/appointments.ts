@@ -13,8 +13,21 @@ export async function GET() {
                 id,
                 paciente        AS patient,
                 especialidad    AS specialty,
-                contacto        AS phone,
-                ''              AS email,
+                -- Si contacto empieza con 'tel:' → extraer el número, si con 'email:' → extraer email
+                CASE
+                    WHEN contacto LIKE 'tel:%'   THEN SUBSTRING(contacto FROM 5)
+                    WHEN contacto LIKE 'email:%' THEN ''
+                    ELSE contacto
+                END             AS phone,
+                CASE
+                    WHEN contacto LIKE 'email:%' THEN SUBSTRING(contacto FROM 7)
+                    ELSE ''
+                END             AS email,
+                CASE
+                    WHEN contacto LIKE 'tel:%'   THEN 'telefono'
+                    WHEN contacto LIKE 'email:%' THEN 'email'
+                    ELSE 'otro'
+                END             AS contact_type,
                 TO_CHAR(fecha_hora AT TIME ZONE 'America/Argentina/Buenos_Aires', 'YYYY-MM-DD HH24:MI') AS date,
                 estado          AS status
             FROM appointments

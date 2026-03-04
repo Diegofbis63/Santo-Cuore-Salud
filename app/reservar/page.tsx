@@ -40,14 +40,16 @@ const ESPECIALIDADES = [
 
 const BOT = {
     welcome: '¡Hola! Soy la recepción virtual de Santo Cuore. ¿En qué especialidad estás buscando un turno?',
-    pedirNombre: (esp: string) => `Perfecto, te agendamos en **${esp}**. ¿Cuál es tu nombre completo?`,
+    pedirNombre: (esp: string) => `Perfecto, agendamos en **${esp}**. ¿Cuál es tu nombre completo?`,
     cargandoSlots: (nombre: string) => `Un momento, ${nombre.split(' ')[0]}. Estoy verificando disponibilidad...`,
     ofrecerSlots: (nombre: string, esp: string) => `Encontré los siguientes turnos disponibles en **${esp}** para vos, ${nombre.split(' ')[0]}. ¿Cuál te queda mejor?`,
-    sinSlots: (esp: string) => `En este momento no tenemos turnos disponibles en **${esp}** para los próximos días. Te recomendamos comunicarte al +54 11 xxxx-xxxx para consultar disponibilidad.`,
-    pedirContacto: (slot: Slot) => `Excelente elección. Turno seleccionado: **${slot.label}**.\n\n¿Me das un número de teléfono o correo electrónico para confirmar la reserva?`,
-    confirmado: (s: Summary) => `¡Turno confirmado exitosamente! 🎉\n\nTe esperamos en Santo Cuore:\n• **Paciente:** ${s.paciente}\n• **Especialidad:** ${s.especialidad}\n• **Fecha:** ${s.slot!.label}\n• **Contacto registrado:** ${s.contacto}\n\nSi necesitás cancelar o modificar, comunicate con nosotros con anticipación. ¡Hasta pronto!`,
+    sinSlots: (esp: string) => `En este momento no tenemos turnos disponibles en **${esp}** para los próximos días. Comunicate al +54 351 807-9549 para consultar disponibilidad.`,
+    pedirContacto: (slot: Slot) => `Excelente elección. Turno seleccionado: **${slot.label}**.\n\n¿Me das un **número de teléfono** o tu **correo electrónico** para confirmar la reserva?`,
+    contactoInvalido: '⚠️ No reconocí ese dato de contacto.\n\nPor favor ingresá:\n• **Teléfono:** mínimo 7 dígitos (ej: 3515551234)\n• **Email:** dirección con @ (ej: nombre@gmail.com)',
+    confirmado: (s: Summary) => `¡Turno confirmado exitosamente! 🎉\n\nTe esperamos en Santo Cuore:\n• **Paciente:** ${s.paciente}\n• **Especialidad:** ${s.especialidad}\n• **Fecha:** ${s.slot!.label}\n• **Contacto registrado:** ${s.contacto}\n\nSi necesitás cancelar o modificar, comunicate con anticipación. ¡Hasta pronto!`,
     errorSlot: 'Ese horario fue tomado por otro paciente mientras seleccionabas. Por favor elegí otro turno disponible.',
     errorGeneral: 'Ocurrió un error al procesar tu solicitud. Por favor intentalo de nuevo.',
+    especialidadCambiada: '¡Claro! ¿Para qué especialidad querés el turno?',
 };
 
 // ── COMPONENTE PRINCIPAL ──────────────────────────────────────────────────────
@@ -85,14 +87,39 @@ const ReservarPage = () => {
         addMsg({ role: 'assistant', content, ...extras });
     };
 
-    // ── HANDLERS POR PASO ─────────────────────────────────────────────────────
+    // ── VALIDACIÓN DE CONTACTO ────────────────────────────────────────────────────
+
+    function detectContactType(value: string): { type: 'phone' | 'email' | 'invalid'; normalized: string } {
+        const trimmed = value.trim();
+        // Email: debe contener exactamente un '@' con texto antes y después
+        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+            return { type: 'email', normalized: trimmed.toLowerCase() };
+        }
+        // Teléfono: contiene solo dígitos, espacios, guiones, paréntesis y + al inicio
+        // Mínimo 7 dígitos numéricos
+        const digitsOnly = trimmed.replace(/[\s\-().+]/g, '');
+        if (/^\d{7,}$/.test(digitsOnly)) {
+            return { type: 'phone', normalized: digitsOnly };
+        }
+        return { type: 'invalid', normalized: trimmed };
+    }
+
+    // ── HANDLERS POR PASO ─────────────────────────────────────────────────────────
 
     const handleEspecialidad = async (esp: string) => {
         if (isLoading) return;
         addUserMsg(esp);
         setSummary(prev => ({ ...prev, especialidad: esp }));
         setStep('nombre');
-        setTimeout(() => addBotMsg(BOT.pedirNombre(esp)), 400);
+        setTimeout(() => addBotMsg(BOT.pedirNombre(esp), {
+            opciones: ['↩ Cambiar especialidad']
+        }), 400);
+    };
+
+    const handleCambiarEspecialidad = () => {
+        setSummary(prev => ({ ...prev, especialidad: '', slot: null }));
+        setStep('especialidad');
+        addBotMsg(BOT.especialidadCambiada, { opciones: ESPECIALIDADES });
     };
 
     const handleNombre = async (nombre: string) => {
@@ -136,8 +163,20 @@ const ReservarPage = () => {
 
     const handleContacto = async (contacto: string) => {
         if (!contacto.trim() || isLoading) return;
+
+        // ── Validación de tipo de contacto ────────────────────────────────────
+        const { type, normalized } = detectContactType(contacto);
+        if (type === 'invalid') {
+            addUserMsg(contacto);
+            setTimeout(() => addBotMsg(BOT.contactoInvalido), 400);
+            setInput('');
+            return; // Permanece en el paso 'contacto' para reintentar
+        }
+
         addUserMsg(contacto);
-        const newSummary = { ...summary, contacto: contacto.trim() };
+        // El contacto que se guarda: prefijado para diferenciarlo en la UI admin
+        const contactoGuardar = type === 'email' ? `email:${normalized}` : `tel:${normalized}`;
+        const newSummary = { ...summary, contacto: normalized };
         setSummary(newSummary);
         setIsLoading(true);
 
@@ -150,7 +189,8 @@ const ReservarPage = () => {
                     paciente: newSummary.paciente,
                     especialidad: newSummary.especialidad,
                     fechaHora: newSummary.slot!.iso,
-                    contacto: contacto.trim()
+                    contacto: contactoGuardar,
+                    tipoContacto: type
                 })
             });
             const data = await res.json();
@@ -215,19 +255,24 @@ const ReservarPage = () => {
                 {/* Botones de especialidad */}
                 {msg.opciones && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '14px' }}>
-                        {msg.opciones.map(op => (
-                            <button key={op} onClick={() => handleEspecialidad(op)} style={{
-                                padding: '8px 14px', borderRadius: '20px', border: '1px solid rgba(0,194,203,0.4)',
-                                background: 'rgba(0,131,137,0.15)', color: '#00c2cb', cursor: 'pointer',
-                                fontSize: '0.9rem', fontWeight: '600', transition: 'all 0.2s',
-                                display: 'flex', alignItems: 'center', gap: '6px'
-                            }}
-                                onMouseEnter={e => { (e.target as HTMLElement).style.background = 'rgba(0,131,137,0.35)'; }}
-                                onMouseLeave={e => { (e.target as HTMLElement).style.background = 'rgba(0,131,137,0.15)'; }}
-                            >
-                                <ChevronRight size={14} />{op}
-                            </button>
-                        ))}
+                        {msg.opciones.map(op => {
+                            const isCambiar = op === '↩ Cambiar especialidad';
+                            return (
+                                <button key={op}
+                                    onClick={() => isCambiar ? handleCambiarEspecialidad() : handleEspecialidad(op)}
+                                    style={{
+                                        padding: '8px 14px', borderRadius: '20px',
+                                        border: isCambiar ? '1px solid rgba(202,20,28,0.35)' : '1px solid rgba(0,194,203,0.4)',
+                                        background: isCambiar ? 'rgba(202,20,28,0.1)' : 'rgba(0,131,137,0.15)',
+                                        color: isCambiar ? '#ff6b6b' : '#00c2cb',
+                                        cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600',
+                                        transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px'
+                                    }}
+                                >
+                                    {isCambiar ? null : <ChevronRight size={14} />}{op}
+                                </button>
+                            );
+                        })}
                     </div>
                 )}
 

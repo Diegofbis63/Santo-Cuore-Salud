@@ -97,7 +97,7 @@ export async function POST(req: Request) {
 
         // ── CREATE_BOOKING ────────────────────────────────────────────────────
         if (action === 'create_booking') {
-            const { paciente, especialidad, fechaHora, contacto } = body;
+            const { paciente, especialidad, fechaHora, contacto, tipoContacto } = body;
             if (!paciente || !especialidad || !fechaHora || !contacto) {
                 return json({ error: 'Requerido: paciente, especialidad, fechaHora, contacto' }, 400);
             }
@@ -119,7 +119,7 @@ export async function POST(req: Request) {
                 return json({ error: 'El turno ya no está disponible. Elegí otro horario.', code: 'SLOT_TAKEN' }, 409);
             }
 
-            // Insertar reserva
+            // contacto ya viene con prefijo "tel:XXXXXXXX" o "email:user@domain.com"
             await sql`
                 INSERT INTO appointments (paciente, especialidad, fecha_hora, estado, contacto)
                 VALUES (
@@ -134,7 +134,7 @@ export async function POST(req: Request) {
             return json({
                 success: true,
                 mensaje: `Turno confirmado para ${paciente} en ${especialidad} — ${fmtLong(fechaDate)}.`,
-                detalles: { paciente, especialidad, fechaHora: fmtLong(fechaDate), contacto }
+                detalles: { paciente, especialidad, fechaHora: fmtLong(fechaDate), contacto, tipoContacto }
             });
         }
 
