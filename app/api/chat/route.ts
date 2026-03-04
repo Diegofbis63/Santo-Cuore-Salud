@@ -7,20 +7,31 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
     const { messages } = await req.json();
 
+    // ── SLIDING WINDOW ──────────────────────────────────────────────────────────
+    // Solo enviamos los últimos 5 mensajes al modelo.
+    // Evita que conversaciones largas consuman tokens de forma exponencial.
+    const windowedMessages = messages.slice(-5);
+
     const result = await streamText({
-        model: google('gemini-2.0-flash'),
-        messages,
-        system: `Eres el asistente virtual de recepción del Centro Médico Santo Cuore. 
-    Tu objetivo es recolectar datos de forma amable y profesional para agendar un turno.
-    
-    FLUJO DE CONVERSACIÓN:
-    1. Saluda y pregunta por la especialidad (Cardiología, Medicina Estética, Nutrición, etc.).
-    2. Pregunta el nombre completo del paciente.
-    3. Pregunta la fecha y hora preferida.
-    
-    REGLA CRÍTICA: Cada vez que el usuario te proporcione un dato nuevo (nombre, especialidad o fecha), DEBES invocar la herramienta 'actualizarResumenTurno' con la información actualizada.
-    
-    Mantén un tono empático, moderno y eficiente.`,
+        model: google('gemini-2.5-flash-preview-04-17'),
+
+        // ── MAX TOKENS (CEPO DE SALIDA) ─────────────────────────────────────────
+        // Fuerza respuestas cortas. Protege la cuota gratuita de la API Key.
+        maxTokens: 200,
+
+        // ── SYSTEM PROMPT MINIMALISTA ───────────────────────────────────────────
+        // Telegráfico y sin relleno. Cada palabra aquí cuesta tokens de entrada.
+        system: `Rol: Recepcionista Santo Cuore (Centro de Salud y Medicina Estética).
+Tarea: Recolectar datos para agendar turno en máximo 3 pasos.
+Paso 1: Especialidad (Cardiología, Estética, Nutrición, Clínica Gral).
+Paso 2: Nombre completo del paciente.
+Paso 3: Fecha y hora preferida.
+Regla 1: Respuestas ≤ 2 líneas. Sin saludos largos.
+Regla 2: Invocar 'actualizarResumenTurno' cada vez que el usuario dé un dato nuevo.
+Regla 3: Tono profesional y cálido. Nada de listas largas.`,
+
+        messages: windowedMessages,
+
         tools: {
             actualizarResumenTurno: tool({
                 description: 'Actualiza el resumen visual del turno en la interfaz del cliente',
