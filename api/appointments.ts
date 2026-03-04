@@ -1,146 +1,142 @@
 import { neon } from '@neondatabase/serverless';
 
-export const config = {
-    runtime: 'edge',
-};
+export const config = { runtime: 'edge' };
 
-// GET: Obtener todos los turnos con datos del paciente cruzados
-export async function GET(req: Request) {
+const getDb = () => neon(process.env.DATABASE_URL || process.env.POSTGRES_URL || '');
+
+// ── GET: Listar todos los turnos para el panel admin ─────────────────────────
+export async function GET() {
     try {
-        const sql = neon(process.env.DATABASE_URL!);
-        const appointments = await sql`
-            SELECT 
-                a.id,
-                p.nombre as patient,
-                p.telefono as phone,
-                p.email,
-                a.especialidad as specialty,
-                TO_CHAR(a.fecha_hora, 'YYYY-MM-DD HH24:MI') as date,
-                a.estado as status
-            FROM appointments a
-            JOIN patients p ON a.patient_id = p.id
-            ORDER BY a.fecha_hora ASC
+        const sql = getDb();
+        const rows = await sql`
+            SELECT
+                id,
+                paciente        AS patient,
+                especialidad    AS specialty,
+                contacto        AS phone,
+                ''              AS email,
+                TO_CHAR(fecha_hora AT TIME ZONE 'America/Argentina/Buenos_Aires', 'YYYY-MM-DD HH24:MI') AS date,
+                estado          AS status
+            FROM appointments
+            ORDER BY fecha_hora ASC
         `;
-        return new Response(JSON.stringify(appointments), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    } catch (error) {
-        return new Response(JSON.stringify({ error: String(error) }), { status: 500 });
+        return json(rows);
+    } catch (err) {
+        console.error('GET /api/appointments error:', err);
+        return json({ error: String(err) }, 500);
     }
 }
 
-// POST: Crear un nuevo turno (e insertar/actualizar paciente si no existe)
+// ── POST: Crear turno manualmente desde el admin ──────────────────────────────
 export async function POST(req: Request) {
     try {
-        const sql = neon(process.env.DATABASE_URL!);
+        const sql = getDb();
         const body = await req.json();
+        const { patient, specialty, date, status = 'confirmado', phone = '', email = '' } = body;
 
-        // El email es requerido en DB por el esquema actual (UNIQUE NOT NULL).
-        // Si no lo proveen, generamos un identificador único para no fallar.
-        const safeEmail = body.email || `paciente_${Date.now()}@santocuore.local`;
+        if (!patient || !specialty || !date) {
+            return json({ error: 'Campos requeridos: patient, specialty, date' }, 400);
+        }
 
-        // 1. Insertar o recuperar paciente
-        const patientResult = await sql`
-            INSERT INTO patients (nombre, telefono, email)
-            VALUES (${body.patient}, ${body.phone || null}, ${safeEmail})
-            ON CONFLICT (email) DO UPDATE 
-            SET nombre = EXCLUDED.nombre, telefono = EXCLUDED.telefono
-            RETURNING id
+        const contacto = phone || email || '';
+
+        const result = await sql`
+            INSERT INTO appointments (paciente, especialidad, fecha_hora, estado, contacto)
+            VALUES (
+                ${patient},
+                ${specialty},
+                ${date}::timestamptz,
+                ${status},
+                ${contacto}
+            )
+            RETURNING
+                id,
+                paciente        AS patient,
+                especialidad    AS specialty,
+                contacto        AS phone,
+                ''              AS email,
+                TO_CHAR(fecha_hora AT TIME ZONE 'America/Argentina/Buenos_Aires', 'YYYY-MM-DD HH24:MI') AS date,
+                estado          AS status
         `;
-        const patientId = patientResult[0].id;
 
-        // 2. Insertar turno
-        const aptResult = await sql`
-            INSERT INTO appointments (patient_id, especialidad, fecha_hora, estado)
-            VALUES (${patientId}, ${body.specialty}, ${body.date}, ${body.status})
-            RETURNING id, especialidad as specialty, TO_CHAR(fecha_hora, 'YYYY-MM-DD HH24:MI') as date, estado as status
-        `;
-
-        const newApt = {
-            id: aptResult[0].id,
-            patient: body.patient,
-            phone: body.phone,
-            email: body.email,
-            specialty: aptResult[0].specialty,
-            date: aptResult[0].date,
-            status: aptResult[0].status
-        };
-
-        return new Response(JSON.stringify(newApt), { status: 201, headers: { 'Content-Type': 'application/json' } });
-    } catch (error) {
-        return new Response(JSON.stringify({ error: String(error) }), { status: 500 });
+        return json(result[0], 201);
+    } catch (err) {
+        console.error('POST /api/appointments error:', err);
+        return json({ error: String(err) }, 500);
     }
 }
 
-// PATCH: Actualizar el estado de un turno (usado por los botones check/cruz/reloj)
+// ── PATCH: Cambiar estado del turno ───────────────────────────────────────────
 export async function PATCH(req: Request) {
     try {
-        const sql = neon(process.env.DATABASE_URL!);
+        const sql = getDb();
         const { id, status } = await req.json();
 
-        if (!id || !status) {
-            return new Response(JSON.stringify({ error: 'Faltan datos' }), { status: 400 });
+        if (!id || !status) return json({ error: 'Requerido: id, status' }, 400);
+
+        const validStatuses = ['pendiente', 'confirmado', 'cancelado'];
+        if (!validStatuses.includes(status)) {
+            return json({ error: `Estado inválido. Válidos: ${validStatuses.join(', ')}` }, 400);
         }
 
         const result = await sql`
-            UPDATE appointments 
-            SET estado = ${status} 
+            UPDATE appointments
+            SET estado = ${status}
             WHERE id = ${id}
-            RETURNING id, estado as status
+            RETURNING id, estado AS status
         `;
 
-        if (result.length === 0) {
-            return new Response(JSON.stringify({ error: 'Turno no encontrado' }), { status: 404 });
-        }
+        if (result.length === 0) return json({ error: 'Turno no encontrado' }, 404);
 
-        return new Response(JSON.stringify(result[0]), { status: 200, headers: { 'Content-Type': 'application/json' } });
-    } catch (error) {
-        return new Response(JSON.stringify({ error: String(error) }), { status: 500 });
+        return json(result[0]);
+    } catch (err) {
+        console.error('PATCH /api/appointments error:', err);
+        return json({ error: String(err) }, 500);
     }
 }
 
-// PUT: Editar todos los detalles de un turno y su paciente
+// ── PUT: Editar todos los detalles de un turno ────────────────────────────────
 export async function PUT(req: Request) {
     try {
-        const sql = neon(process.env.DATABASE_URL!);
+        const sql = getDb();
         const body = await req.json();
-        const { id, patient, phone, email, specialty, date, status } = body;
+        const { id, patient, specialty, date, status, phone, email } = body;
 
-        if (!id) return new Response(JSON.stringify({ error: 'Faltan ID del turno' }), { status: 400 });
+        if (!id) return json({ error: 'Requerido: id' }, 400);
 
-        // 1. Obtener patient_id desde el turno actual
-        const aptContext = await sql`SELECT patient_id FROM appointments WHERE id = ${id}`;
-        if (aptContext.length === 0) return new Response(JSON.stringify({ error: 'Turno no encontrado' }), { status: 404 });
+        const contacto = phone || email || null;
 
-        const patientId = aptContext[0].patient_id;
-
-        // 2. Actualizar datos del paciente
-        const safeEmail = email || `paciente_${Date.now()}@santocuore.local`;
-        await sql`
-            UPDATE patients
-            SET nombre = ${patient}, telefono = ${phone || null}, email = ${safeEmail}
-            WHERE id = ${patientId}
-        `;
-
-        // 3. Actualizar datos del turno
-        const aptResult = await sql`
+        // Actualizar solo los campos provistos
+        const result = await sql`
             UPDATE appointments
-            SET especialidad = ${specialty}, fecha_hora = ${date}, estado = ${status}
+            SET
+                paciente     = CASE WHEN ${patient || null}::text IS NOT NULL THEN ${patient || null} ELSE paciente END,
+                especialidad = CASE WHEN ${specialty || null}::text IS NOT NULL THEN ${specialty || null} ELSE especialidad END,
+                fecha_hora   = CASE WHEN ${date || null}::text IS NOT NULL THEN ${date || null}::timestamptz ELSE fecha_hora END,
+                estado       = CASE WHEN ${status || null}::text IS NOT NULL THEN ${status || null} ELSE estado END,
+                contacto     = CASE WHEN ${contacto}::text IS NOT NULL THEN ${contacto} ELSE contacto END
             WHERE id = ${id}
-            RETURNING id, especialidad as specialty, TO_CHAR(fecha_hora, 'YYYY-MM-DD HH24:MI') as date, estado as status
+            RETURNING
+                id,
+                paciente        AS patient,
+                especialidad    AS specialty,
+                contacto        AS phone,
+                ''              AS email,
+                TO_CHAR(fecha_hora AT TIME ZONE 'America/Argentina/Buenos_Aires', 'YYYY-MM-DD HH24:MI') AS date,
+                estado          AS status
         `;
 
-        const updatedApt = {
-            id: aptResult[0].id,
-            patient, phone, email: safeEmail,
-            specialty: aptResult[0].specialty,
-            date: aptResult[0].date,
-            status: aptResult[0].status
-        };
-
-        return new Response(JSON.stringify(updatedApt), { status: 200, headers: { 'Content-Type': 'application/json' } });
-    } catch (error) {
-        return new Response(JSON.stringify({ error: String(error) }), { status: 500 });
+        if (result.length === 0) return json({ error: 'Turno no encontrado' }, 404);
+        return json(result[0]);
+    } catch (err) {
+        console.error('PUT /api/appointments error:', err);
+        return json({ error: String(err) }, 500);
     }
+}
+
+function json(data: any, status = 200) {
+    return new Response(JSON.stringify(data), {
+        status,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
 }
