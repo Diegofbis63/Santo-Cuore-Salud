@@ -368,28 +368,28 @@ const ReservarPage = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
                             <div>
                                 <label style={{ fontSize: '0.72rem', color: '#008389', fontWeight: '800', letterSpacing: '1px' }}>PACIENTE</label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', fontSize: '1rem', color: summary.paciente ? 'white' : 'rgba(255,255,255,0.2)' }}>
+                                <div className="summary-val" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', fontSize: '1rem', color: summary.paciente ? 'white' : 'rgba(255,255,255,0.2)' }}>
                                     <User size={16} /> {summary.paciente || 'Esperando nombre...'}
                                 </div>
                             </div>
 
                             <div>
                                 <label style={{ fontSize: '0.72rem', color: '#008389', fontWeight: '800', letterSpacing: '1px' }}>ESPECIALIDAD</label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', fontSize: '1rem', color: summary.especialidad ? 'white' : 'rgba(255,255,255,0.2)' }}>
+                                <div className="summary-val" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', fontSize: '1rem', color: summary.especialidad ? 'white' : 'rgba(255,255,255,0.2)' }}>
                                     <Activity size={16} /> {summary.especialidad || 'Sin seleccionar'}
                                 </div>
                             </div>
 
                             <div>
                                 <label style={{ fontSize: '0.72rem', color: '#008389', fontWeight: '800', letterSpacing: '1px' }}>FECHA Y HORA</label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', fontSize: '1rem', color: summary.slot ? 'white' : 'rgba(255,255,255,0.2)' }}>
+                                <div className="summary-val" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', fontSize: '1rem', color: summary.slot ? 'white' : 'rgba(255,255,255,0.2)' }}>
                                     <Clock size={16} /> {summary.slot ? summary.slot.label : 'Sin definir'}
                                 </div>
                             </div>
 
                             <div>
                                 <label style={{ fontSize: '0.72rem', color: '#008389', fontWeight: '800', letterSpacing: '1px' }}>CONTACTO</label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', fontSize: '1rem', color: summary.contacto ? 'white' : 'rgba(255,255,255,0.2)' }}>
+                                <div className="summary-val" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', fontSize: '1rem', color: summary.contacto ? 'white' : 'rgba(255,255,255,0.2)' }}>
                                     <Phone size={16} /> {summary.contacto || 'Teléfono o email...'}
                                 </div>
                             </div>
@@ -421,7 +421,7 @@ const ReservarPage = () => {
                                 );
                             })}
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)' }}>
+                        <div className="progress-labels" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)' }}>
                             <span>Especialidad</span><span>Nombre</span><span>Horario</span><span>Contacto</span><span>Listo</span>
                         </div>
                     </div>

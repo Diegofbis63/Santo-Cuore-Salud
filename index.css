@@ -1391,3 +1391,69 @@ h4 {
 [data-theme="light"] [style*="color: 'white'"] {
   color: #1a1a2e !important;
 }
+
+/* ── Sidebar Confirmación: summary field values ── */
+[data-theme="light"] .summary-val {
+  /* Filled value: 'white' → dark navy */
+  /* Placeholder: 'rgba(255,255,255,0.2)' → readable muted */
+  color: #5a6880 !important;
+}
+
+/* ── Sidebar: progress step labels (Especialidad, Nombre...) ── */
+[data-theme="light"] .progress-labels {
+  color: rgba(26, 26, 46, 0.45) !important;
+}
+
+/* Inactive progress bar segments */
+[data-theme="light"] .reservar-grid [style*="rgba(255,255,255,0.1)"] {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODO B — STAFF CARDS: text below image
+   ═══════════════════════════════════════════════════════════ */
+
+/* Remove the dark photo overlay in light mode */
+[data-theme="light"] .staff-grid .glass-card>div:first-child>div {
+  background: none !important;
+}
+
+/* Un-overlap text from photo: reset the negative margin pull-up */
+[data-theme="light"] .staff-grid .glass-card>div:last-child {
+  margin-top: 0 !important;
+  background: #ffffff;
+  border-top: 1px solid rgba(202, 20, 28, 0.08);
+  padding: 22px 24px 26px !important;
+  border-radius: 0 0 20px 20px;
+}
+
+/* Card stretches to show full content + remove fixed height clipping */
+[data-theme="light"] .staff-grid .glass-card {
+  align-items: stretch !important;
+  overflow: visible !important;
+}
+
+/* Photo container: keep height consistent, image slightly lighter */
+[data-theme="light"] .staff-grid .glass-card>div:first-child {
+  background: #f0f4f8 !important;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+}
+
+[data-theme="light"] .staff-grid .glass-card img {
+  filter: grayscale(10%) contrast(100%) !important;
+}
+
+/* Name: dark navy (override inline color:'white') */
+[data-theme="light"] .staff-grid .glass-card h3 {
+  color: #1a1a2e !important;
+  text-shadow: none !important;
+  font-size: 1.1rem !important;
+  margin-bottom: 6px !important;
+}
+
+/* Role: brand teal (already correct, just ensure no override) */
+[data-theme="light"] .staff-grid .glass-card p {
+  color: #008389 !important;
+  font-size: 0.9rem !important;
+}
