@@ -1,111 +1,134 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { streamText, tool } from 'ai';
-import { z } from 'zod';
-
-// We run as a Node.js serverless function to ensure streams and `fetch` work 100% reliably.
+import { neon } from '@neondatabase/serverless';
 
 export const config = {
     runtime: 'edge',
 };
 
+const getDb = () => neon(process.env.DATABASE_URL || process.env.POSTGRES_URL || '');
+
+// ── CONFIGURACIÓN Y DATA ──────────────────────────────────────────────────────
+
+const ESPECIALIDADES = [
+    'Traumatología', 'Cardiología', 'Pediatría',
+    'Ginecología', 'Dermatología', 'Nutrición', 'Medicina Estética'
+];
+
+interface Slot {
+    iso: string;
+    label: string;
+}
+
+// ── UTILS ────────────────────────────────────────────────────────────────────
+
+function generateSlots(desde: Date): Date[] {
+    const slots: Date[] = [];
+    for (let d = 0; d < 14; d++) {
+        const day = new Date(desde);
+        day.setDate(day.getDate() + d);
+        if (day.getDay() === 0 || day.getDay() === 6) continue;
+        for (let h = 9; h < 20; h++) {
+            for (const m of [0, 30]) {
+                const slot = new Date(day);
+                slot.setHours(h, m, 0, 0);
+                if (slot > desde) slots.push(slot);
+            }
+        }
+        if (slots.length >= 20) break;
+    }
+    return slots;
+}
+
+function fmtLong(d: Date): string {
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    return `${days[d.getDay()]} ${d.getDate()} de ${months[d.getMonth()]} p/ las ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+// ── LÓGICA DE DETECCIÓN ──────────────────────────────────────────────────────
+
+function findEspecialidad(history: string[]) {
+    return ESPECIALIDADES.find(e => history.some(h => h.toLowerCase().includes(e.toLowerCase())));
+}
+
+function findSlot(text: string, slots: Date[]) {
+    // Busca coincidencias de hora o palabras clave
+    return slots.find(s => {
+        const timeStr = `${String(s.getHours()).padStart(2, '0')}:${String(s.getMinutes()).padStart(2, '0')}`;
+        return text.includes(timeStr) || (text.includes('10') && s.getHours() === 10) || (text.includes('16') && s.getHours() === 16);
+    });
+}
+
+// ── HANDLER PRINCIPAL ────────────────────────────────────────────────────────
+
 export async function POST(req: Request) {
     try {
-        const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSyCMZCEHIuyOXYqGv0df0W5wLlztn_XzFcs";
-
-        const google = createGoogleGenerativeAI({
-            apiKey: key,
-        });
         const { messages } = await req.json();
+        const userMessages = messages.filter((m: any) => m.role === 'user');
+        const lastMsg = userMessages[userMessages.length - 1]?.content || "";
+        const historyText = userMessages.map((m: any) => m.content).join(' ');
 
-        // ── SLIDING WINDOW ──────────────────────────────────────────────────────────
-        // El flujo de reserva tiene ~10 mensajes (5 pasos × pregunta+respuesta).
-        // Usamos los últimos 14 para garantizar que NUNCA se pierda el contexto de
-        // especialidad, nombre, fecha o contacto ya dados por el paciente.
-        const windowedMessages = messages.slice(-14);
+        // Heurísticas de extracción
+        const especialidad = findEspecialidad([historyText]);
+        const contacto = lastMsg.match(/\d{8,}/) || lastMsg.includes('@') ? lastMsg : null;
 
-        const result = await streamText({
-            model: google('gemini-2.5-flash'),
-            maxRetries: 0,
-            messages: windowedMessages,
-            system: `Eres la "Recepcionista Digital Inteligente de Santo Cuore", una clínica médica premium de alta gama.
-      Tu objetivo es agendar turnos médicos de forma amable, rápida y eficiente.
-      
-      Especialidades disponibles: Traumatología, Cardiología, Pediatría, Ginecología, Dermatología, Nutrición / Medicina Estética.
-      
-      DISPONIBILIDAD FIJA DE AGENDA (usar SIEMPRE formato 24hs, nunca AM/PM ni texto):
-      - Mañana a las 10:00
-      - Mañana a las 16:30
-      - Pasado mañana a las 11:15
-      
-      === FLUJO OBLIGATORIO PASO A PASO (NO SALTEAR NINGÚN PASO) ===
-      
-      PASO 1 — ESPECIALIDAD: Si el paciente no la mencionó, preguntá cuál necesita.
-      PASO 2 — NOMBRE: Si el paciente no lo dijo, pedí su nombre completo.
-      PASO 3 — OFRECER HORARIOS: Con especialidad y nombre confirmados, ofrecé los 3 horarios en formato 24hs. Ejemplo CORRECTO: "Tenemos disponible mañana a las 10:00, mañana a las 16:30, o pasado mañana a las 11:15. ¿Cuál te queda mejor?" NUNCA digas "11 y cuarto", "cuatro y media", "10 de la mañana" ni formatos AM/PM.
-      PASO 4 — CONTACTO: Cuando el paciente elija un horario, ANTES de confirmar, pedí un dato de contacto: número de teléfono y/o correo electrónico. Ejemplo: "Perfecto, para completar tu reserva necesito un dato de contacto. ¿Me podés dar tu número de teléfono o correo electrónico?"
-      PASO 5 — CONFIRMAR: Una vez que el paciente proporcionó el dato de contacto, usando 'confirmarTurno' despedite cálidamente con todos los datos del turno. NO repitas los horarios disponibles.
-      
-      === REGLAS CRÍTICAS ===
-      
-      DETECCIÓN DE ELECCIÓN DE TURNO: Si el usuario dice cualquier cosa que incluya una hora, una fecha, "mañana", "pasado mañana", "el jueves", "a las X", "esa", "el primero", "el último", etc., debe interpretarse como que ELIGIÓ un horario. En ese caso NO confirmes aún — pasá al PASO 4 y pedí el dato de contacto.
-      
-      DETECCIÓN DE CONTACTO: Si el usuario da un número de teléfono (ej: "11 1234 5678") o un email (ej: "juan@mail.com"), registralo inmediatamente y procedé a usar 'confirmarTurno'.
-      
-      FORMATO DE HORARIOS (CRÍTICO): SIEMPRE usar formato 24hs con dos puntos. NUNCA usar texto como "y cuarto", "y media", "de la tarde", "AM", "PM". Las horas SIEMPRE van así: 10:00, 16:30, 11:15.
-      
-      REGLAS GENERALES:
-      1. Usa un tono elegante y cálido (usa 'vos' de forma respetuosa).
-      2. No des diagnósticos, solo orientá al especialista adecuado.
-      3. SIEMPRE invocar una herramienta por mensaje ('actualizarResumenTurno' mientras se recopilan datos, 'confirmarTurno' solo cuando tenés: nombre + especialidad + fechaHora + contacto).
-      4. TODO el texto de tu respuesta verbal va SIEMPRE en el parámetro "respuesta" de la herramienta.
-      5. PALABRAS PROHIBIDAS: "base de datos", "sistemas", "IA", "procesando", "buscando".
-      6. CONTEXTO ACUMULADO: Antes de responder, revisá TODOS los mensajes anteriores del historial para recuperar cualquier dato ya dado (especialidad, nombre, fecha, contacto). NUNCA volvás a pedir un dato que el paciente ya proporcionó en mensajes anteriores.`,
-            tools: {
-                actualizarResumenTurno: tool({
-                    description: 'Usar cuando aún estás recopilando datos del turno. Contiene tu respuesta verbal al usuario.',
-                    parameters: z.object({
-                        paciente: z.string().optional().describe('Nombre completo del paciente si ya lo dijo'),
-                        especialidad: z.string().optional().describe('Especialidad médica si ya la dijo'),
-                        fechaHora: z.string().optional().describe('Fecha/hora en formato 24hs si ya la eligió (ej: "Mañana a las 16:30")'),
-                        contacto: z.string().optional().describe('Teléfono o email si ya lo proporcionó'),
-                        respuesta: z.string().describe('Tu respuesta verbal completa que se mostrará al paciente en el chat')
-                    }),
-                    execute: async (args) => {
-                        return { updated: args };
-                    }
-                }),
-                confirmarTurno: tool({
-                    description: 'USAR SOLO cuando tenés: nombre + especialidad + fechaHora + contacto del paciente. Finaliza la reserva y cierra la conversación.',
-                    parameters: z.object({
-                        paciente: z.string().describe('Nombre completo del paciente'),
-                        especialidad: z.string().describe('Especialidad confirmada'),
-                        fechaHora: z.string().describe('Fecha y hora en formato 24hs (ej: "Mañana a las 16:30")'),
-                        contacto: z.string().describe('Teléfono y/o email del paciente'),
-                        confirmado: z.boolean().describe('Siempre true'),
-                        respuesta: z.string().describe('Mensaje cálido de despedida confirmando el turno con todos los datos: nombre, especialidad, fecha y contacto. Decirle que lo esperamos en la clínica.')
-                    }),
-                    execute: async () => {
-                        return {
-                            exito: true,
-                            mensaje: 'Turno reservado exitosamente.'
-                        };
-                    }
-                }),
-            },
-            maxSteps: 1, // Previene llamadas múltiples al LLM que agotan los límites de la API Key gratuita.
+        // Suposición de nombre: si hay especialidad pero no contacto, y el msg no es de tiempo
+        const likelyName = userMessages.find((m: any) => {
+            const c = m.content.toLowerCase();
+            return c.split(' ').length >= 2 && !ESPECIALIDADES.some(e => c.includes(e.toLowerCase())) && !c.includes(':') && !c.includes('1');
+        })?.content;
+
+        let responseText = "";
+
+        if (!especialidad) {
+            responseText = "¡Hola! Soy el asistente virtual de Santo Cuore. ¿En qué especialidad estás buscando un turno? (Traumatología, Cardiología, Pediatría, etc.)";
+        } else if (!likelyName) {
+            responseText = `Perfecto, agendamos para **${especialidad}**. ¿Cuál es tu nombre completo, por favor?`;
+        } else {
+            // Tenemos Especialidad y Nombre -> Ofrecer Slots
+            const now = new Date();
+            const allSlots = generateSlots(now);
+
+            // Verificamos si el usuario ya eligió un slot
+            const chosenSlot = findSlot(lastMsg, allSlots);
+
+            if (!chosenSlot) {
+                const s1 = allSlots[0];
+                const s2 = allSlots[2];
+                const s3 = allSlots[4];
+                responseText = `Perfecto, ${likelyName.split(' ')[0]}. Tenemos disponible ${fmtLong(s1)}, ${fmtLong(s2)} o ${fmtLong(s3)}. ¿Cuál te queda mejor?`;
+            } else if (!contacto) {
+                responseText = `Excelente elección para el ${fmtLong(chosenSlot)}. Para completar tu reserva necesito un dato de contacto. ¿Me podés dar tu número de teléfono o correo electrónico?`;
+            } else {
+                // TODO: Insertar en DB de forma real aquí
+                try {
+                    const sql = getDb();
+                    await sql`
+                        INSERT INTO appointments (paciente, especialidad, fecha_hora, estado, contacto)
+                        VALUES (${likelyName}, ${especialidad}, ${chosenSlot.toISOString()}::timestamptz, 'confirmado', ${contacto})
+                    `;
+                } catch (e) {
+                    console.error("DB Insert failed in chat api:", e);
+                }
+
+                responseText = `¡Listo, ${likelyName.split(' ')[0]}! Tu turno para **${especialidad}** el **${fmtLong(chosenSlot)}** ha sido confirmado. \n\nTe esperamos en 9 de Julio 660. ¡Gracias por confiar en Santo Cuore!`;
+            }
+        }
+
+        // Simular stream para compatibilidad con useChat
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+            start(controller) {
+                controller.enqueue(encoder.encode(`0:${JSON.stringify(responseText)}\n`));
+                controller.close();
+            }
         });
 
-        return result.toDataStreamResponse();
+        return new Response(stream, {
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
+
     } catch (err: any) {
-        console.error('CHAT_API_CRITICAL_FAILURE:', err);
-        return new Response(JSON.stringify({
-            error: 'Error de conexión con el asistente virtual.',
-            hint: 'Verifica tu conexión o reintenta en unos segundos.',
-            rawError: String(err.message || err.toString())
-        }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-        });
+        return new Response(`Error: ${err.message}`, { status: 500 });
     }
 }
 

@@ -99,17 +99,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             minHeight: '100vh', background: '#0a0a0a', display: 'flex',
             alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden'
         }}>
-            {/* Ambient Glows */}
-            <div style={{
-                position: 'fixed', width: '60vw', height: '60vw', borderRadius: '50%',
-                background: 'rgba(202, 20, 28, 0.12)', filter: 'blur(120px)',
-                top: '-20vw', right: '-10vw', zIndex: 0, pointerEvents: 'none'
-            }} />
-            <div style={{
-                position: 'fixed', width: '50vw', height: '50vw', borderRadius: '50%',
-                background: 'rgba(0, 131, 137, 0.12)', filter: 'blur(120px)',
-                bottom: '-10vw', left: '-10vw', zIndex: 0, pointerEvents: 'none'
-            }} />
+
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -162,9 +152,9 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
                             value={pass}
                             onChange={e => setPass(e.target.value)}
                             style={{
-                                width: '100%', background: '#0f172a',
+                                width: '100%', background: 'rgba(255,255,255,0.05)',
                                 border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '10px', padding: '12px 42px 12px 42px',
+                                borderRadius: '12px', padding: '12px 12px 12px 42px',
                                 color: 'white', fontSize: '0.95rem', boxSizing: 'border-box'
                             }}
                         />
@@ -386,16 +376,7 @@ const AdminDashboardContent = ({ setIsAuthenticated }: { setIsAuthenticated: (va
 
     return (
         <div style={{ paddingTop: '110px', minHeight: '100vh', background: '#0a0a0a', color: '#f8fafc', position: 'relative', overflow: 'hidden' }}>
-            <div style={{
-                position: 'fixed', width: '60vw', height: '60vw', borderRadius: '50%',
-                background: 'rgba(202, 20, 28, 0.12)', filter: 'blur(120px)',
-                top: '-20vw', right: '-10vw', zIndex: 0, pointerEvents: 'none'
-            }} />
-            <div style={{
-                position: 'fixed', width: '50vw', height: '50vw', borderRadius: '50%',
-                background: 'rgba(0, 131, 137, 0.12)', filter: 'blur(120px)',
-                bottom: '-10vw', left: '-10vw', zIndex: 0, pointerEvents: 'none'
-            }} />
+
 
             <div className="container" style={{ padding: '40px 0', position: 'relative', zIndex: 1 }}>
                 <div className="admin-header">
@@ -471,13 +452,13 @@ const AdminDashboardContent = ({ setIsAuthenticated }: { setIsAuthenticated: (va
                             <div style={{ position: 'relative' }}>
                                 <button
                                     onClick={() => setShowFilter(!showFilter)}
-                                    style={{ background: filterStatus !== 'todos' ? 'rgba(99,102,241,0.2)' : '#0f172a', border: filterStatus !== 'todos' ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '8px 12px', color: filterStatus !== 'todos' ? '#818cf8' : '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem' }}>
+                                    style={{ background: filterStatus !== 'todos' ? 'rgba(0, 194, 203, 0.1)' : 'rgba(255,255,255,0.05)', border: filterStatus !== 'todos' ? '1px solid rgba(0, 194, 203, 0.3)' : '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '8px 12px', color: filterStatus !== 'todos' ? '#00c2cb' : '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem' }}>
                                     <Filter size={16} /> {filterStatus === 'todos' ? 'Filtrar' : filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}
                                 </button>
                                 <AnimatePresence>
                                     {showFilter && (
                                         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                                            style={{ position: 'absolute', top: '44px', right: 0, background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', zIndex: 100, minWidth: '160px' }}>
+                                            style={{ position: 'absolute', top: '44px', right: 0, background: '#141414', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', zIndex: 100, minWidth: '160px', backdropFilter: 'blur(10px)' }}>
                                             {['todos', 'hoy', 'pendiente', 'confirmado', 'cancelado'].map(s => (
                                                 <button key={s} onClick={() => { setFilterStatus(s); setShowFilter(false); }}
                                                     style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', background: filterStatus === s ? 'rgba(255,255,255,0.05)' : 'none', border: 'none', color: filterStatus === s ? 'white' : '#94a3b8', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', textTransform: 'capitalize' }}>

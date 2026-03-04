@@ -34,7 +34,7 @@ body {
   position: fixed;
   border-radius: 50%;
   filter: blur(120px);
-  opacity: 0.4;
+  opacity: 0.25;
   z-index: -1;
   pointer-events: none;
   animation: pulseGlow 10s ease-in-out infinite alternate;

@@ -265,17 +265,7 @@ const ReservarPage = () => {
 
     return (
         <div style={{ minHeight: '100vh', background: '#0a0a0a', paddingTop: '100px', paddingBottom: '60px', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden' }}>
-            {/* Ambient Glows */}
-            <div style={{
-                position: 'fixed', width: '60vw', height: '60vw', borderRadius: '50%',
-                background: 'rgba(202, 20, 28, 0.15)', filter: 'blur(120px)',
-                top: '-20vw', right: '-10vw', zIndex: 0, pointerEvents: 'none'
-            }} />
-            <div style={{
-                position: 'fixed', width: '50vw', height: '50vw', borderRadius: '50%',
-                background: 'rgba(0, 131, 137, 0.15)', filter: 'blur(120px)',
-                bottom: '-10vw', left: '-10vw', zIndex: 0, pointerEvents: 'none'
-            }} />
+
 
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 380px', gap: '30px', alignItems: 'start', position: 'relative', zIndex: 1 }}>
 
