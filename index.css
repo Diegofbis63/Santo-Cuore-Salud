@@ -1479,3 +1479,29 @@ h4 {
 [data-theme="light"] .virtud-item span {
   color: #4a5568 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   MODO B — Slot buttons (horarios disponibles)
+   ═══════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .slot-btn {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 131, 137, 0.35) !important;
+  border-left: 4px solid #008389 !important;
+  color: #1a1a2e !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-theme="light"] .slot-btn:hover {
+  background: rgba(0, 131, 137, 0.08) !important;
+  border-color: rgba(0, 131, 137, 0.6) !important;
+  border-left-color: #008389 !important;
+  box-shadow: 0 4px 16px rgba(0, 131, 137, 0.15) !important;
+  transform: translateX(4px);
+}
+
+[data-theme="light"] .slot-btn span {
+  color: #1a1a2e !important;
+  font-weight: 500;
+}

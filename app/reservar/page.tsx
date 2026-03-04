@@ -280,14 +280,18 @@ const ReservarPage = () => {
                 {msg.slots && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
                         {msg.slots.map(slot => (
-                            <button key={slot.iso} onClick={() => handleSlot(slot)} style={{
-                                padding: '12px 16px', borderRadius: '16px', border: '1px solid rgba(0,194,203,0.3)',
-                                background: 'rgba(0,131,137,0.12)', color: 'white', cursor: 'pointer',
-                                fontSize: '0.95rem', textAlign: 'left', transition: 'all 0.2s',
-                                display: 'flex', alignItems: 'center', gap: '10px'
-                            }}
-                                onMouseEnter={e => { (e.target as HTMLElement).style.background = 'rgba(0,131,137,0.3)'; }}
-                                onMouseLeave={e => { (e.target as HTMLElement).style.background = 'rgba(0,131,137,0.12)'; }}
+                            <button
+                                key={slot.iso}
+                                className="slot-btn"
+                                onClick={() => handleSlot(slot)}
+                                style={{
+                                    padding: '12px 16px', borderRadius: '16px', border: '1px solid rgba(0,194,203,0.3)',
+                                    background: 'rgba(0,131,137,0.12)', color: 'white', cursor: 'pointer',
+                                    fontSize: '0.95rem', textAlign: 'left', transition: 'all 0.2s',
+                                    display: 'flex', alignItems: 'center', gap: '10px', width: '100%'
+                                }}
+                                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,131,137,0.3)'; }}
+                                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,131,137,0.12)'; }}
                             >
                                 <Clock size={16} color="#00c2cb" style={{ flexShrink: 0 }} />
                                 <span>{slot.label}</span>
