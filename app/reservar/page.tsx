@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, User, Calendar, Activity, Shield, Clock, AlertCircle, RefreshCcw } from 'lucide-react';
+import { Send, User, Calendar, Activity, Shield, Clock, AlertCircle, RefreshCcw, Phone } from 'lucide-react';
 import { useChat } from 'ai/react';
 
 const ReservarPage = () => {
@@ -21,6 +21,7 @@ const ReservarPage = () => {
         paciente: '',
         especialidad: '',
         fecha: '',
+        contacto: '',
         status: 'Esperando datos...'
     });
 
@@ -45,6 +46,7 @@ const ReservarPage = () => {
                         paciente: data.paciente || prev.paciente,
                         especialidad: data.especialidad || prev.especialidad,
                         fecha: data.fechaHora || prev.fecha,
+                        contacto: data.contacto || prev.contacto,
                         status: (data.paciente || prev.paciente) && (data.especialidad || prev.especialidad) ? 'Casi listo...' : 'Esperando datos...'
                     }));
                 }
@@ -55,6 +57,7 @@ const ReservarPage = () => {
                         paciente: args.paciente || prev.paciente,
                         especialidad: args.especialidad || prev.especialidad,
                         fecha: args.fechaHora || prev.fecha,
+                        contacto: args.contacto || prev.contacto,
                         status: '✅ Turno confirmado'
                     }));
                 }
@@ -195,6 +198,12 @@ const ReservarPage = () => {
                                 <label style={{ fontSize: '0.75rem', color: '#008389', fontWeight: '800', letterSpacing: '1px' }}>FECHA Y HORA</label>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', fontSize: '1.1rem', color: summary.fecha ? 'white' : 'rgba(255,255,255,0.2)' }}>
                                     <Clock size={18} /> {summary.fecha || 'Sin definir'}
+                                </div>
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.75rem', color: '#008389', fontWeight: '800', letterSpacing: '1px' }}>CONTACTO</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', fontSize: '1.1rem', color: summary.contacto ? 'white' : 'rgba(255,255,255,0.2)' }}>
+                                    <Phone size={18} /> {summary.contacto || 'Teléfono o email...'}
                                 </div>
                             </div>
                         </div>

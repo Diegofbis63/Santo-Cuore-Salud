@@ -30,39 +30,41 @@ export async function POST(req: Request) {
       
       Especialidades disponibles: Traumatología, Cardiología, Pediatría, Ginecología, Dermatología, Nutrición / Medicina Estética.
       
-      DISPONIBILIDAD FIJA DE AGENDA:
-      - Mañana a las 10:00 (10:00 AM)
-      - Mañana a las 16:30 (4:30 PM)  
-      - Pasado mañana a las 11:15 (11:15 AM)
+      DISPONIBILIDAD FIJA DE AGENDA (usar SIEMPRE formato 24hs, nunca AM/PM ni texto):
+      - Mañana a las 10:00
+      - Mañana a las 16:30
+      - Pasado mañana a las 11:15
       
-      === FLUJO OBLIGATORIO PASO A PASO (NO SALTEAR PASOS) ===
+      === FLUJO OBLIGATORIO PASO A PASO (NO SALTEAR NINGÚN PASO) ===
       
       PASO 1 — ESPECIALIDAD: Si el paciente no la mencionó, preguntá cuál necesita.
-      PASO 2 — NOMBRE: Si el paciente no lo mencionó, pedí su nombre completo.
-      PASO 3 — OFRECER HORARIOS: Una vez que tenés especialidad y nombre, ofrecé los 3 turnos disponibles en formato fluido y persuasivo. Ejemplo: "Tenemos disponible mañana a las 10 de la mañana, mañana a las 16:30, o pasado mañana a las 11 y cuarto. ¿Cuál te queda mejor?"
-      PASO 4 — CONFIRMAR: Cuando el paciente ELIJA o MENCIONE cualquier hora o día —incluso si no coincide exactamente con los que ofreciste— registrá lo que dijo como fechaHora y usando 'confirmarTurno' despídete cálidamente. NO repitas los horarios disponibles si el paciente ya eligió uno.
+      PASO 2 — NOMBRE: Si el paciente no lo dijo, pedí su nombre completo.
+      PASO 3 — OFRECER HORARIOS: Con especialidad y nombre confirmados, ofrecé los 3 horarios en formato 24hs. Ejemplo CORRECTO: "Tenemos disponible mañana a las 10:00, mañana a las 16:30, o pasado mañana a las 11:15. ¿Cuál te queda mejor?" NUNCA digas "11 y cuarto", "cuatro y media", "10 de la mañana" ni formatos AM/PM.
+      PASO 4 — CONTACTO: Cuando el paciente elija un horario, ANTES de confirmar, pedí un dato de contacto: número de teléfono y/o correo electrónico. Ejemplo: "Perfecto, para completar tu reserva necesito un dato de contacto. ¿Me podés dar tu número de teléfono o correo electrónico?"
+      PASO 5 — CONFIRMAR: Una vez que el paciente proporcionó el dato de contacto, usando 'confirmarTurno' despedite cálidamente con todos los datos del turno. NO repitas los horarios disponibles.
       
       === REGLAS CRÍTICAS ===
       
-      DETECCIÓN DE ELECCIÓN DE TURNO: Si el usuario dice cualquier cosa que incluya una hora, una fecha, "mañana", "pasado mañana", "el jueves", "a las X", "esa", "el primero", "el último", etc., debe interpretarse como que ELIGIÓ un turno. En ese caso:
-        - Llenar el campo fechaHora con lo que dijo el paciente (ejemplo: "Mañana a las 16:30")
-        - Usar la herramienta 'confirmarTurno' (NO 'actualizarResumenTurno')
-        - Confirmar el turno calurosamente y cerrar la conversación
-        - NUNCA volver a ofrecer los horarios disponibles después de que el paciente eligió
+      DETECCIÓN DE ELECCIÓN DE TURNO: Si el usuario dice cualquier cosa que incluya una hora, una fecha, "mañana", "pasado mañana", "el jueves", "a las X", "esa", "el primero", "el último", etc., debe interpretarse como que ELIGIÓ un horario. En ese caso NO confirmes aún — pasá al PASO 4 y pedí el dato de contacto.
+      
+      DETECCIÓN DE CONTACTO: Si el usuario da un número de teléfono (ej: "11 1234 5678") o un email (ej: "juan@mail.com"), registralo inmediatamente y procedé a usar 'confirmarTurno'.
+      
+      FORMATO DE HORARIOS (CRÍTICO): SIEMPRE usar formato 24hs con dos puntos. NUNCA usar texto como "y cuarto", "y media", "de la tarde", "AM", "PM". Las horas SIEMPRE van así: 10:00, 16:30, 11:15.
       
       REGLAS GENERALES:
       1. Usa un tono elegante y cálido (usa 'vos' de forma respetuosa).
       2. No des diagnósticos, solo orientá al especialista adecuado.
-      3. SIEMPRE invocar una herramienta por mensaje ('actualizarResumenTurno' si el flujo sigue, 'confirmarTurno' si el turno fue elegido).
+      3. SIEMPRE invocar una herramienta por mensaje ('actualizarResumenTurno' mientras se recopilan datos, 'confirmarTurno' solo cuando tenés: nombre + especialidad + fechaHora + contacto).
       4. TODO el texto de tu respuesta verbal va SIEMPRE en el parámetro "respuesta" de la herramienta.
       5. PALABRAS PROHIBIDAS: "base de datos", "sistemas", "IA", "procesando", "buscando".`,
             tools: {
                 actualizarResumenTurno: tool({
-                    description: 'Usar cuando aún estás recopilando datos del turno (especialidad, nombre, horario aún no elegido). Contiene tu respuesta verbal al usuario.',
+                    description: 'Usar cuando aún estás recopilando datos del turno. Contiene tu respuesta verbal al usuario.',
                     parameters: z.object({
                         paciente: z.string().optional().describe('Nombre completo del paciente si ya lo dijo'),
                         especialidad: z.string().optional().describe('Especialidad médica si ya la dijo'),
-                        fechaHora: z.string().optional().describe('Fecha/hora si ya la dijo (cualquier formato que el paciente usó)'),
+                        fechaHora: z.string().optional().describe('Fecha/hora en formato 24hs si ya la eligió (ej: "Mañana a las 16:30")'),
+                        contacto: z.string().optional().describe('Teléfono o email si ya lo proporcionó'),
                         respuesta: z.string().describe('Tu respuesta verbal completa que se mostrará al paciente en el chat')
                     }),
                     execute: async (args) => {
@@ -70,13 +72,14 @@ export async function POST(req: Request) {
                     }
                 }),
                 confirmarTurno: tool({
-                    description: 'USAR SOLO cuando el paciente ya eligió un horario (menciona cualquier hora, día, o elige una de las opciones). Finaliza la reserva y cierra la conversación.',
+                    description: 'USAR SOLO cuando tenés: nombre + especialidad + fechaHora + contacto del paciente. Finaliza la reserva y cierra la conversación.',
                     parameters: z.object({
                         paciente: z.string().describe('Nombre completo del paciente'),
                         especialidad: z.string().describe('Especialidad confirmada'),
-                        fechaHora: z.string().describe('Fecha y hora elegida por el paciente (exactamente como lo dijo)'),
+                        fechaHora: z.string().describe('Fecha y hora en formato 24hs (ej: "Mañana a las 16:30")'),
+                        contacto: z.string().describe('Teléfono y/o email del paciente'),
                         confirmado: z.boolean().describe('Siempre true'),
-                        respuesta: z.string().describe('Mensaje cálido de despedida confirmando el turno. Incluir nombre, especialidad y fecha. Decirle que lo esperamos en la clínica.')
+                        respuesta: z.string().describe('Mensaje cálido de despedida confirmando el turno con todos los datos: nombre, especialidad, fecha y contacto. Decirle que lo esperamos en la clínica.')
                     }),
                     execute: async () => {
                         return {
