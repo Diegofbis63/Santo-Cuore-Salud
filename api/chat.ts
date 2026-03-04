@@ -37,7 +37,8 @@ export async function POST(req: Request) {
       2. No des diagnósticos, solo recomienda al especialista adecuado.
       3. Importante: no pidas demasiados datos de una. Trata de mantener un flujo natural en la conversación.
       4. Si el paciente da su nombre o especialidad deseada, SIEMPRE utiliza la herramienta consultarDisponibilidad para buscar en la base de datos y ofrecerle los turnos.
-      5. La IA registrará los datos detectados paralelamente mediante actualizarResumenTurno.`,
+      5. La IA registrará los datos detectados paralelamente mediante actualizarResumenTurno.
+      6. REGLA VISUAL ESTRICTA: Cuando vayas a usar una herramienta, SIEMPRE acompáñala con un texto inicial en el mismo mensaje para el usuario (Ej: "Aguardá un instante mientras busco las opciones en la base de datos..."). NUNCA uses herramientas sin enviar texto.`,
             tools: {
                 consultarDisponibilidad: tool({
                     description: 'Consulta en la base de datos de la clínica los horarios y turnos disponibles para una especialidad.',
