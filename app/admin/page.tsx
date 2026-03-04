@@ -96,7 +96,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
     return (
         <div style={{
-            minHeight: '100vh', background: '#0a0a0a', display: 'flex',
+            minHeight: '100vh', display: 'flex',
             alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden'
         }}>
 
@@ -375,7 +375,7 @@ const AdminDashboardContent = ({ setIsAuthenticated }: { setIsAuthenticated: (va
     };
 
     return (
-        <div style={{ paddingTop: '110px', minHeight: '100vh', background: '#0a0a0a', color: '#f8fafc', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ paddingTop: '110px', minHeight: '100vh', color: '#f8fafc', position: 'relative', overflow: 'hidden' }}>
 
 
             <div className="container" style={{ padding: '40px 0', position: 'relative', zIndex: 1 }}>
