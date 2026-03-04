@@ -33,20 +33,22 @@ export async function POST(req: Request) {
       - Nutrición / Medicina Estética (Especialidades VIP)
       
       Instrucciones Críticas:
-      1. Usa un tono sumamente elegante y profesional (usa 'vos' de forma respetuosa).
+      1. Usa un tono sumamente elegante y cálido (usa 'vos' de forma respetuosa).
       2. No des diagnósticos, solo recomienda al especialista adecuado.
-      3. Importante: no pidas demasiados datos de una. Trata de mantener un flujo natural en la conversación.
-      4. Si el paciente da su nombre o especialidad deseada, SIEMPRE utiliza la herramienta consultarDisponibilidad para buscar en la base de datos y ofrecerle los turnos.
+      3. Nunca pidas multitudes de datos a la vez; guía la conversación paso a paso (primero especialidad, luego nombre, luego opciones de turnos).
+      4. Si el paciente menciona una especialidad, siempre utiliza la herramienta consultarDisponibilidad de forma invisible (sin advertirle que "andas buscando", hazlo como una secretaria humana).
       5. La IA registrará los datos detectados paralelamente mediante actualizarResumenTurno.
-      6. REGLA VISUAL ESTRICTA: Cuando vayas a usar una herramienta, SIEMPRE acompáñala con un texto inicial en el mismo mensaje para el usuario (Ej: "Aguardá un instante mientras busco las opciones en la base de datos..."). NUNCA uses herramientas sin enviar texto.`,
+      6. REGLA DE FORMATO AL LISTAR HORARIOS: No utilices listas con asteriscos (*), formatea los horarios de modo fluido y persuasivo (Ejemplo: "Te cuento que tengo disponibilidad para mañana a las 10:00 o a las 16:30. También podría ser el jueves a las 11:15. ¿Qué te queda más cómodo?").
+      7. PALABRAS PROHIBIDAS: Nunca digas "base de datos", "sistemas", "IA", "inteligencia artificial" o "procesando". Debes actuar siempre como una prestigiosa recepcionista de carne y hueso.
+      8. REGLA VISUAL DE ESPERA: Si vas a requerir un segundo al usar herramientas de fondo, en el mismo mensaje introduce una fase suave, como por ejemplo: "Aguardame un segundo mientras reviso la agenda..." o "Dame un instante que verifico los turnos..."`,
             tools: {
                 consultarDisponibilidad: tool({
-                    description: 'Consulta en la base de datos de la clínica los horarios y turnos disponibles para una especialidad.',
+                    description: 'Consulta los horarios y turnos que están libres para la clínica.',
                     parameters: z.object({
                         especialidad: z.string().describe('La especialidad buscada (ej: dermatología, cardiología)'),
                     }),
                     execute: async ({ especialidad }) => {
-                        console.log('Consultando DB para:', especialidad);
+                        console.log('Consultando agenda para:', especialidad);
                         // Mock DB call:
                         const horariosDisponibles = [
                             'Mañana a las 10:00 AM',
@@ -56,7 +58,7 @@ export async function POST(req: Request) {
                         return {
                             especialidad,
                             horarios: horariosDisponibles,
-                            mensaje: `Base de datos consultada. Menciona textualmente al usuario estos horarios disponibles para ${especialidad} y pregúntale cuál prefiere.`
+                            mensaje: `Hay turnos libres. Preséntaselos elegantemente, sin lenguaje de máquina o listas toscas.`
                         };
                     }
                 }),
@@ -72,8 +74,20 @@ export async function POST(req: Request) {
                         return { updated: args };
                     }
                 }),
+                confirmarTurno: tool({
+                    description: 'Utiliza esta herramienta solo cuando el paciente ya eligió un horario específico de los que le ofreciste y ya sabes su nombre. Finaliza el proceso de reserva.',
+                    parameters: z.object({
+                        confirmado: z.boolean().describe('True para confirmar la reserva elegida')
+                    }),
+                    execute: async () => {
+                        return {
+                            exito: true,
+                            mensaje: 'El turno ha sido pre-agendado. Cierra la conversación de forma cálida indicando que lo esperamos en la clínica. NUNCA pidas más datos.'
+                        };
+                    }
+                }),
             },
-            maxSteps: 5,
+            maxSteps: 3,
         });
 
         return result.toDataStreamResponse();
