@@ -183,14 +183,14 @@ h4 {
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 20px 0;
+  padding: 9px 0;
   transition: all 0.3s ease;
 }
 
 .navbar.scrolled {
   background: rgba(10, 10, 10, 0.8);
   backdrop-filter: blur(20px);
-  padding: 15px 0;
+  padding: 9px 0;
   border-bottom: 1px solid var(--glass-border);
 }
 
@@ -571,6 +571,14 @@ h4 {
 }
 
 @media (max-width: 768px) {
+  .navbar {
+    padding: 20px 0;
+  }
+
+  .navbar.scrolled {
+    padding: 15px 0;
+  }
+
   .nav-links.desktop-only {
     display: none;
   }
