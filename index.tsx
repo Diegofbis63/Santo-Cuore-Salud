@@ -37,12 +37,13 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Links */}
-        <div className="nav-links desktop-only">
+        <div className="nav-links desktop-only" style={{ alignItems: 'center' }}>
           <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Inicio</Link>
           <Link to="/especialidades" className={`nav-link ${location.pathname === '/especialidades' ? 'active' : ''}`}>Especialidades</Link>
           <Link to="/staff" className={`nav-link ${location.pathname === '/staff' ? 'active' : ''}`}>Staff</Link>
           <Link to="/reservar" className={`nav-link ${location.pathname === '/reservar' ? 'active' : ''}`}>Turnos</Link>
           <Link to="/contacto" className={`nav-link ${location.pathname === '/contacto' ? 'active' : ''}`}>Contacto</Link>
+          <Link to="/admin" className="btn-primary" style={{ padding: '8px 24px', fontSize: '0.9rem', marginLeft: '16px' }}>Acceso</Link>
         </div>
 
         {/* Mobile Toggle */}
@@ -59,6 +60,7 @@ const Navbar = () => {
           <Link to="/contacto" className={`mobile-nav-link ${location.pathname === '/contacto' ? 'active' : ''}`}>Contacto</Link>
 
           <div className="mobile-menu-footer">
+            <Link to="/admin" className="btn-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '20px' }}>Acceso Administrativo</Link>
             <div className="mobile-contact-item">
               <Phone size={18} />
               <span>+54 (351) 4241928</span>
@@ -177,25 +179,14 @@ const Home = () => {
     <>
       <section className="hero-v2" style={{ position: 'relative', width: '100%' }}>
         {/* Banner Image Container */}
-        <div style={{
-          width: '100%',
-          height: '60vh',
-          position: 'relative',
-          marginTop: '110px',
-          overflow: 'hidden'
-        }}>
+        <div className="hero-banner-container">
           <motion.img
             src="/logo-hover.png"
             alt=""
             initial={{ opacity: 0, scale: 1.1 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.5 }}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              filter: 'none'
-            }}
+            className="hero-banner-image"
           />
         </div>
 
