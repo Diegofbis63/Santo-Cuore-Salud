@@ -243,11 +243,15 @@ const labelStyle: React.CSSProperties = {
 const AdminDashboard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    if (!isAuthenticated) {
-        return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
-    }
-
-    return <AdminDashboardContent setIsAuthenticated={setIsAuthenticated} />;
+    return (
+        <AnimatePresence mode="wait">
+            {!isAuthenticated ? (
+                <LoginScreen key="login-screen" onLogin={() => setIsAuthenticated(true)} />
+            ) : (
+                <AdminDashboardContent key="admin-content" setIsAuthenticated={setIsAuthenticated} />
+            )}
+        </AnimatePresence>
+    );
 };
 
 // ─── DASHBOARD CONTENT ───────────────────────────────────────────────────────
