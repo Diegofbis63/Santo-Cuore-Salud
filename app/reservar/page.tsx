@@ -48,6 +48,16 @@ const ReservarPage = () => {
                         status: (data.paciente || prev.paciente) && (data.especialidad || prev.especialidad) ? 'Casi listo...' : 'Esperando datos...'
                     }));
                 }
+                // Also handle confirmarTurno to show all data + confirmed status
+                if (inv.toolName === 'confirmarTurno') {
+                    const args = inv.args || {};
+                    setSummary(prev => ({
+                        paciente: args.paciente || prev.paciente,
+                        especialidad: args.especialidad || prev.especialidad,
+                        fecha: args.fechaHora || prev.fecha,
+                        status: '✅ Turno confirmado'
+                    }));
+                }
             });
         }
     }, [messages]);
