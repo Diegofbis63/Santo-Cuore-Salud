@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users, Calendar, Activity, CheckCircle, Clock,
@@ -26,16 +26,6 @@ interface Appointment {
 const SPECIALTIES = [
     'Cardiología', 'Medicina Estética', 'Nutrición',
     'Ginecología', 'Clínica General', 'Traumatología'
-];
-
-const initialAppointments: Appointment[] = [
-    { id: 1, patient: 'Juan Pérez', specialty: 'Cardiología', date: '2025-03-05 09:00', status: 'confirmado', phone: '+54 9 351 111 0001', email: 'juan@email.com' },
-    { id: 2, patient: 'María García', specialty: 'Medicina Estética', date: '2025-03-05 10:30', status: 'pendiente', phone: '+54 9 351 222 0002', email: 'maria@email.com' },
-    { id: 3, patient: 'Carlos López', specialty: 'Nutrición', date: '2025-03-05 11:15', status: 'cancelado', phone: '+54 9 351 333 0003', email: 'carlos@email.com' },
-    { id: 4, patient: 'Ana Martínez', specialty: 'Ginecología', date: '2025-03-06 08:45', status: 'confirmado', phone: '+54 9 351 444 0004', email: 'ana@email.com' },
-    { id: 5, patient: 'Roberto Gómez', specialty: 'Cardiología', date: '2025-03-06 12:00', status: 'pendiente', phone: '+54 9 351 555 0005', email: 'roberto@email.com' },
-    { id: 6, patient: 'Lucía Torres', specialty: 'Clínica General', date: '2025-03-06 14:00', status: 'pendiente', phone: '+54 9 351 666 0006', email: 'lucia@email.com' },
-    { id: 7, patient: 'Diego Fernández', specialty: 'Traumatología', date: '2025-03-07 09:30', status: 'confirmado', phone: '+54 9 351 777 0007', email: 'diego@email.com' },
 ];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -238,10 +228,11 @@ const labelStyle: React.CSSProperties = {
 // ─── MAIN DASHBOARD ──────────────────────────────────────────────────────────
 const AdminDashboard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [search, setSearch] = useState('');
     const [filterStatus, setFilterStatus] = useState<string>('todos');
     const [showFilter, setShowFilter] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Modals
     const [editTarget, setEditTarget] = useState<Appointment | null>(null);
@@ -279,27 +270,100 @@ const AdminDashboard = () => {
         ? Math.round((confirmados / appointments.length) * 100)
         : 0;
 
+    // ── DATABASE FETCH ────────────────────────────────────────────────────────
+    const fetchAppointments = async () => {
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/appointments');
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setAppointments(data);
+            }
+        } catch (err) {
+            console.error('Error fetching appointments:', err);
+        }
+        setIsLoading(false);
+    };
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchAppointments();
+        }
+    }, [isAuthenticated]);
+
     // ── ACTIONS ───────────────────────────────────────────────────────────────
-    const setStatus = (id: number, status: Status) =>
+    const setStatus = async (id: number, status: Status) => {
+        // Optimistic update
+        const backup = [...appointments];
         setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+        try {
+            const res = await fetch('/api/appointments', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status })
+            });
+            if (!res.ok) throw new Error('Falló al actualizar estado');
+        } catch (err) {
+            console.error(err);
+            setAppointments(backup); // revertir en caso de fallo
+            fetchAppointments();
+        }
+    };
 
     const openEdit = (apt: Appointment) => {
         setEditForm({ ...apt });
         setEditTarget(apt);
     };
 
-    const saveEdit = () => {
+    const saveEdit = async () => {
         if (!editTarget) return;
-        setAppointments(prev => prev.map(a => a.id === editTarget.id ? { ...a, ...editForm } as Appointment : a));
+        const currentTargetId = editTarget.id;
+
+        // Optimistic update
+        const backup = [...appointments];
+        const formData = { id: currentTargetId, ...editForm };
+        setAppointments(prev => prev.map(a => a.id === currentTargetId ? { ...a, ...editForm } as Appointment : a));
         setEditTarget(null);
+
+        try {
+            const res = await fetch('/api/appointments', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            if (!res.ok) throw new Error('Falló al editar el turno');
+            const updated = await res.json();
+            // Optional: update with the real returned record
+            setAppointments(prev => prev.map(a => a.id === updated.id ? updated : a));
+        } catch (err) {
+            console.error(err);
+            setAppointments(backup);
+            fetchAppointments();
+        }
     };
 
-    const createTurno = () => {
+    const createTurno = async () => {
         if (!newForm.patient || !newForm.date) return;
-        const id = Math.max(0, ...appointments.map(a => a.id)) + 1;
-        setAppointments(prev => [...prev, { ...newForm, id } as Appointment]);
         setNewTurno(false);
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/appointments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newForm)
+            });
+            if (res.ok) {
+                const inserted = await res.json();
+                setAppointments(prev => [...prev, inserted]);
+            } else {
+                console.error(await res.json());
+                fetchAppointments(); // refresh por las dudas
+            }
+        } catch (err) {
+            console.error(err);
+        }
         setNewForm({ patient: '', specialty: SPECIALTIES[0], date: '', status: 'pendiente', phone: '', email: '' });
+        setIsLoading(false);
     };
 
     return (
@@ -419,7 +483,7 @@ const AdminDashboard = () => {
                                 {filtered.length === 0 ? (
                                     <tr>
                                         <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: '#475569' }}>
-                                            No se encontraron turnos.
+                                            {isLoading ? 'Cargando turnos desde Base de Datos...' : 'No se encontraron turnos.'}
                                         </td>
                                     </tr>
                                 ) : filtered.map(apt => (
