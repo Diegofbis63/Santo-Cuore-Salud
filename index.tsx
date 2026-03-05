@@ -47,7 +47,7 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <div className="nav-links desktop-only" style={{ alignItems: 'center' }}>
-          <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Inicio</Link>
+          <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Inicio</Link>
           <Link to="/especialidades" className={`nav-link ${location.pathname === '/especialidades' ? 'active' : ''}`}>Especialidades</Link>
           <Link to="/staff" className={`nav-link ${location.pathname === '/staff' ? 'active' : ''}`}>Staff</Link>
           <Link to="/reservar" className={`nav-link ${location.pathname === '/reservar' ? 'active' : ''}`}>Turnos</Link>
@@ -104,7 +104,7 @@ const Navbar = () => {
 
         {/* Mobile Menu Overlay */}
         <div className={`mobile-menu ${isOpen ? 'open' : ''}`}>
-          <Link to="/" className={`mobile-nav-link ${location.pathname === '/' ? 'active' : ''}`}>Inicio</Link>
+          <Link to="/" onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setIsOpen(false); }} className={`mobile-nav-link ${location.pathname === '/' ? 'active' : ''}`}>Inicio</Link>
           <Link to="/especialidades" className={`mobile-nav-link ${location.pathname === '/especialidades' ? 'active' : ''}`}>Especialidades</Link>
           <Link to="/staff" className={`mobile-nav-link ${location.pathname === '/staff' ? 'active' : ''}`}>Staff</Link>
           <Link to="/reservar" className={`mobile-nav-link ${location.pathname === '/reservar' ? 'active' : ''}`}>Turnos</Link>
@@ -151,7 +151,7 @@ const Footer = () => (
         <div className="footer-col">
           <h4>Enlaces</h4>
           <ul className="footer-links">
-            <li><Link to="/">Inicio</Link></li>
+            <li><Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Inicio</Link></li>
             <li><Link to="/especialidades">Especialidades</Link></li>
             <li><Link to="/staff">Staff Profesional</Link></li>
             <li><Link to="/contacto">Contacto</Link></li>
